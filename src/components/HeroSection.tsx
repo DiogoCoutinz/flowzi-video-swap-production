@@ -8,29 +8,42 @@ interface HeroSectionProps {
 
 const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const videoLeftRef = useRef<HTMLVideoElement>(null);
+  const videoRightRef = useRef<HTMLVideoElement>(null);
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 500], [0, -100]);
   const y2 = useTransform(scrollY, [0, 500], [0, -150]);
   const rotate1 = useTransform(scrollY, [0, 500], [-6, -12]);
   const rotate2 = useTransform(scrollY, [0, 500], [6, 12]);
 
-  // Preload videos by creating hidden video elements
+  // Force autoplay on mount
   useEffect(() => {
-    const videosToPreload = [
-      "/almirante.mp4",
-      "/InfluencerFinal.mov",
-      "/cotrim.mp4",
-      "/videolanding1.mp4",
-      "/videolanding2.mov"
-    ];
+    const playVideos = () => {
+      videoLeftRef.current?.play().catch(() => {});
+      videoRightRef.current?.play().catch(() => {});
+    };
     
-    videosToPreload.forEach(src => {
-      const link = document.createElement('link');
-      link.rel = 'preload';
-      link.as = 'video';
-      link.href = src;
-      document.head.appendChild(link);
-    });
+    // Play immediately
+    playVideos();
+    
+    // Also try after a short delay (for Safari)
+    const timer = setTimeout(playVideos, 100);
+    
+    // And on user interaction (mobile browsers require this)
+    const handleInteraction = () => {
+      playVideos();
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('click', handleInteraction);
+    };
+    
+    document.addEventListener('touchstart', handleInteraction, { once: true });
+    document.addEventListener('click', handleInteraction, { once: true });
+    
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('touchstart', handleInteraction);
+      document.removeEventListener('click', handleInteraction);
+    };
   }, []);
 
   return (
@@ -44,19 +57,21 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
 
       {/* Creative Floating Videos (Desktop only) */}
       <div className="hidden lg:block absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Left Side Video */}
+        {/* Left Side Video - Cotrim */}
         <motion.div 
           style={{ y: y1, rotate: rotate1 }}
           className="absolute left-[-4%] top-[20%] w-[280px] aspect-[9/16] rounded-3xl overflow-hidden border border-white/10 shadow-2xl glass-card p-1"
         >
           <div className="w-full h-full rounded-[22px] overflow-hidden bg-black">
             <video 
-              src="/videolanding1.mp4" 
+              ref={videoLeftRef}
+              src="/cotrim.mp4" 
               autoPlay 
               loop 
               muted 
-              playsInline 
-              className="w-full h-full object-cover opacity-60"
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover opacity-70"
             />
           </div>
         </motion.div>
@@ -68,12 +83,14 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
         >
           <div className="w-full h-full rounded-[22px] overflow-hidden bg-black">
             <video 
+              ref={videoRightRef}
               src="/videolanding2.mov" 
               autoPlay 
               loop 
               muted 
-              playsInline 
-              className="w-full h-full object-cover opacity-60"
+              playsInline
+              preload="auto"
+              className="w-full h-full object-cover opacity-70"
             />
           </div>
         </motion.div>
