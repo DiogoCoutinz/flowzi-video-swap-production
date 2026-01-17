@@ -141,7 +141,21 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
 
     try {
-      // Create Stripe checkout session (no files - just email/name)
+      // 1. Upload files FIRST (so we have links before redirect)
+      const [photoUrl, videoUrl] = await Promise.all([
+        uploadFile(imageFile),
+        uploadFile(videoFile),
+      ]);
+
+      // Save links to localStorage so we don't lose them on redirect
+      localStorage.setItem('flowzi_pending_job', JSON.stringify({
+        photoUrl,
+        videoUrl,
+        email,
+        userName: name
+      }));
+
+      // 2. Create Stripe checkout session
       const { clientSecret, sessionId } = await createCheckoutSession({
         email,
         userName: name,
@@ -154,36 +168,44 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
 
     } catch (error) {
       console.error("Checkout creation error:", error);
-      setApiError(error instanceof Error ? error.message : "Erro ao criar pagamento. Tenta novamente.");
+      setApiError(error instanceof Error ? error.message : "Erro ao preparar pedido. Tenta novamente.");
       setIsProcessing(false);
     }
   };
 
+  // Detect return from Stripe
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const sessionId = params.get('checkout_session_id');
+    
+    if (sessionId && isOpen) {
+      handleCheckoutComplete(sessionId);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [isOpen]);
+
   // Handle Stripe checkout completion
   const handleCheckoutComplete = async (sessionId: string) => {
-    if (!imageFile || !videoFile) {
-      setApiError("Ficheiros em falta. Tenta novamente.");
-      setCurrentStep("error");
-      return;
-    }
-
     try {
       setCurrentStep("processing");
 
-      // 1. Verify payment was successful
+      // 1. Verify payment
       const paymentResult = await verifyCheckout(sessionId);
       
       if (!paymentResult.success) {
         throw new Error("Pagamento não confirmado");
       }
 
-      // 2. Upload files NOW (after payment confirmed)
-      const [photoUrl, videoUrl] = await Promise.all([
-        uploadFile(imageFile),
-        uploadFile(videoFile),
-      ]);
+      // 2. Get data from localStorage
+      const pendingJob = localStorage.getItem('flowzi_pending_job');
+      if (!pendingJob) {
+        throw new Error("Dados do pedido não encontrados");
+      }
+      
+      const { photoUrl, videoUrl, email: savedEmail, userName } = JSON.parse(pendingJob);
 
-      // 3. Send data to n8n Webhook
+      // 3. Send data to n8n Webhook (Production URL)
       const n8nResponse = await fetch("https://n8n.diogocoutinho.cloud/webhook/videosaas", {
         method: "POST",
         headers: {
@@ -192,20 +214,22 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         body: JSON.stringify({
           photoUrl,
           videoUrl,
-          email,
-          userName: name,
+          email: savedEmail,
+          userName,
+          sessionId,
           timestamp: new Date().toISOString(),
         }),
       });
       
       if (n8nResponse.ok) {
+        localStorage.removeItem('flowzi_pending_job');
         setCurrentStep("success");
       } else {
-        throw new Error("Erro ao enviar para processamento no n8n");
+        throw new Error("Erro ao enviar para o n8n");
       }
     } catch (error) {
       console.error("Checkout complete error:", error);
-      setApiError(error instanceof Error ? error.message : "Erro ao processar. Tenta novamente.");
+      setApiError(error instanceof Error ? error.message : "Erro ao finalizar. Contacta o suporte.");
       setCurrentStep("error");
     }
   };
@@ -604,7 +628,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                         {isProcessing ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            A preparar pagamento...
+                            A carregar ficheiros...
                           </>
                         ) : (
                           <>
