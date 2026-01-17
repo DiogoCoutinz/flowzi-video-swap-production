@@ -313,8 +313,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
 
   // Determine modal size based on step
   const getModalSize = () => {
-    if (currentStep === "payment") return "max-w-3xl";
-    return "max-w-xl";
+    if (currentStep === "payment" || currentStep === "success") return "max-w-4xl";
+    return "max-w-2xl";
   };
 
   if (!isOpen) return null;
@@ -461,9 +461,13 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       </div>
                     )}
 
-                    <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5">
+                    <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5 space-y-2">
                       <p className="text-xs text-muted-foreground">
                         <strong className="text-foreground/80">Requisitos:</strong> Rosto claro e bem iluminado • Proporção entre 2:5 e 5:2 • Lado maior ≥ 300px
+                      </p>
+                      <p className="text-[10px] text-primary/70 italic flex items-start gap-1.5 leading-tight">
+                        <Sparkles className="w-3 h-3 flex-shrink-0 mt-0.5" />
+                        <span>Dica: Para melhores resultados, tenta usar uma foto com o fundo parecido ao do vídeo original.</span>
                       </p>
                     </div>
 
@@ -861,22 +865,29 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                           Enquanto esperas, vê alguns exemplos
                         </p>
                         <div className="flex justify-center gap-3">
-                          {["/cotrim.mp4", "/almirante.mp4", "/InfluencerFinal.mov"].map((src, i) => (
+                          {[
+                            { src: "/videolanding1.mp4", label: "Ads" },
+                            { src: "/cotrim.mp4", label: "Humor" },
+                            { src: "/videolanding2.mov", label: "Social" }
+                          ].map((item, i) => (
                             <motion.div 
-                              key={src}
+                              key={item.src}
                               initial={{ opacity: 0, scale: 0.8 }}
                               animate={{ opacity: 1, scale: 1 }}
                               transition={{ delay: 0.7 + i * 0.1 }}
-                              className="w-16 h-24 md:w-20 md:h-32 rounded-xl overflow-hidden border border-white/10 shadow-lg"
+                              className="group relative w-20 h-32 md:w-24 md:h-40 rounded-xl overflow-hidden border border-white/10 shadow-lg bg-black/20"
                             >
                               <video 
-                                src={src} 
-                                className="w-full h-full object-cover" 
-                                autoPlay 
-                                loop 
+                                src={item.src} 
+                                className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity"
                                 muted 
-                                playsInline 
+                                playsInline
+                                loop
+                                autoPlay
                               />
+                              <div className="absolute bottom-1 left-0 right-0 text-[10px] text-white/50 font-medium">
+                                {item.label}
+                              </div>
                             </motion.div>
                           ))}
                         </div>
