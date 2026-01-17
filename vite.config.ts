@@ -25,28 +25,6 @@ export default defineConfig(({ mode }) => ({
     cssMinify: true,
     rollupOptions: {
       output: {
-        manualChunks: (id) => {
-          // React core
-          if (id.includes("node_modules/react") || id.includes("node_modules/react-dom")) {
-            return "vendor-react";
-          }
-          // React router
-          if (id.includes("node_modules/react-router-dom")) {
-            return "vendor-router";
-          }
-          // Framer motion
-          if (id.includes("node_modules/framer-motion")) {
-            return "vendor-framer";
-          }
-          // Radix UI
-          if (id.includes("node_modules/@radix-ui")) {
-            return "vendor-radix";
-          }
-          // Other utilities
-          if (id.includes("node_modules")) {
-            return "vendor-utils";
-          }
-        },
         assetFileNames: (assetInfo) => {
           const info = assetInfo.name?.split(".");
           let extType = info?.[info.length - 1];
