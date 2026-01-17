@@ -24,7 +24,7 @@ const Header = ({ onOpenModal }: HeaderProps) => {
     { href: "#precos", label: "Preços" },
     { href: "#faq", label: "FAQ" },
   ];
-
+  
   return (
     <motion.header
       initial={{ y: -20, opacity: 0 }}
