@@ -61,6 +61,8 @@ export default async function handler(
       success: true,
       email: session.customer_email,
       userName: session.metadata?.userName,
+      photoUrl: session.metadata?.photoUrl,
+      videoUrl: session.metadata?.videoUrl,
     });
   } catch (error) {
     log("ERROR", "Checkout verification error", { 

@@ -7,6 +7,8 @@ const API_BASE = import.meta.env.PROD
 export interface CheckoutRequest {
   email: string;
   userName: string;
+  photoUrl?: string;
+  videoUrl?: string;
 }
 
 export interface CheckoutResponse {
@@ -19,6 +21,8 @@ export interface CheckoutCompleteResponse {
   success: boolean;
   email: string;
   userName: string;
+  photoUrl?: string;
+  videoUrl?: string;
   error?: string;
 }
 

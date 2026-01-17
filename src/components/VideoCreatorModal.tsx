@@ -143,7 +143,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     try {
       console.log("[Flowzi] Starting upload process...");
       
-      // 1. Upload files FIRST (so we have links before redirect)
       const [photoUrl, videoUrl] = await Promise.all([
         uploadFile(imageFile),
         uploadFile(videoFile),
@@ -151,22 +150,18 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
 
       console.log("[Flowzi] Upload complete:", { photoUrl, videoUrl });
 
-      // Save links to localStorage so we don't lose them on redirect
-      const pendingData = {
-        photoUrl,
-        videoUrl,
-        email,
-        userName: name
-      };
+      const pendingData = { photoUrl, videoUrl, email, userName: name };
       localStorage.setItem('flowzi_pending_job', JSON.stringify(pendingData));
-      console.log("[Flowzi] Saved to localStorage:", pendingData);
 
-      // 2. Create Stripe checkout session
       console.log("[Flowzi] Creating Stripe session...");
       const { clientSecret, sessionId } = await createCheckoutSession({
         email,
         userName: name,
+        // Pass URLs to metadata as backup
+        photoUrl,
+        videoUrl
       });
+      // ... rest of the code stays same ...
 
       console.log("[Flowzi] Stripe session created:", sessionId);
 
@@ -215,17 +210,31 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       const pendingJobStr = localStorage.getItem('flowzi_pending_job');
       console.log("[Flowzi] Retrieved from localStorage:", pendingJobStr);
       
-      if (!pendingJobStr) {
-        // Fallback: Payment confirmed but no data - show partial success
-        console.error("[Flowzi] No pending job data found in localStorage");
+      let finalJobData;
+      
+      if (pendingJobStr) {
+        finalJobData = JSON.parse(pendingJobStr);
+      } else if (paymentResult.photoUrl && paymentResult.videoUrl) {
+        // Fallback: use data from Stripe metadata if localStorage is empty
+        console.log("[Flowzi] Using fallback data from Stripe metadata");
+        finalJobData = {
+          photoUrl: paymentResult.photoUrl,
+          videoUrl: paymentResult.videoUrl,
+          email: paymentResult.email,
+          userName: paymentResult.userName
+        };
+      }
+
+      if (!finalJobData) {
+        // Fallback: Payment confirmed but no data at all
+        console.error("[Flowzi] No pending job data found anywhere");
         setEmail(paymentResult.email || "");
-        setApiError("Pagamento confirmado! Mas houve um problema técnico. Contacta flowzi.geral@gmail.com com o teu email para processarmos o teu vídeo manualmente.");
+        setApiError("Pagamento confirmado! Mas houve um problema técnico ao recuperar os teus ficheiros. Contacta flowzi.geral@gmail.com.");
         setCurrentStep("error");
         return;
       }
       
-      const pendingJob = JSON.parse(pendingJobStr);
-      const { photoUrl, videoUrl, email: savedEmail, userName } = pendingJob;
+      const { photoUrl, videoUrl, email: savedEmail, userName } = finalJobData;
       
       console.log("[Flowzi] Parsed pending job:", { photoUrl: photoUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50), savedEmail, userName });
 

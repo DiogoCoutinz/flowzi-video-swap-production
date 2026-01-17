@@ -8,6 +8,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 interface CheckoutRequest {
   email: string;
   userName: string;
+  photoUrl?: string;
+  videoUrl?: string;
 }
 
 export default async function handler(
@@ -19,7 +21,7 @@ export default async function handler(
   }
 
   try {
-    const { email, userName } = req.body as CheckoutRequest;
+    const { email, userName, photoUrl, videoUrl } = req.body as CheckoutRequest;
 
     if (!email || !userName) {
       return res.status(400).json({
@@ -35,10 +37,9 @@ export default async function handler(
       });
     }
 
-    // Get the app URL for redirects
-    const APP_URL = process.env.VERCEL_URL
-      ? `https://${process.env.VERCEL_URL}`
-      : process.env.APP_URL || "http://localhost:8080";
+    // Get the app URL for redirects (prefer origin header to stay on same domain)
+    const origin = req.headers.origin || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : "http://localhost:8080");
+    const APP_URL = origin.replace(/\/$/, ""); // Remove trailing slash if any
 
     // Create Checkout Session with embedded mode and promotion codes enabled
     const session = await stripe.checkout.sessions.create({
@@ -53,6 +54,8 @@ export default async function handler(
       ],
       metadata: {
         userName,
+        photoUrl: photoUrl || "",
+        videoUrl: videoUrl || "",
       },
       allow_promotion_codes: true, // Enable native Stripe promo code field
       return_url: `${APP_URL}/?checkout_session_id={CHECKOUT_SESSION_ID}`,
