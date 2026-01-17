@@ -141,25 +141,34 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
 
     try {
+      console.log("[Flowzi] Starting upload process...");
+      
       // 1. Upload files FIRST (so we have links before redirect)
       const [photoUrl, videoUrl] = await Promise.all([
         uploadFile(imageFile),
         uploadFile(videoFile),
       ]);
 
+      console.log("[Flowzi] Upload complete:", { photoUrl, videoUrl });
+
       // Save links to localStorage so we don't lose them on redirect
-      localStorage.setItem('flowzi_pending_job', JSON.stringify({
+      const pendingData = {
         photoUrl,
         videoUrl,
         email,
         userName: name
-      }));
+      };
+      localStorage.setItem('flowzi_pending_job', JSON.stringify(pendingData));
+      console.log("[Flowzi] Saved to localStorage:", pendingData);
 
       // 2. Create Stripe checkout session
+      console.log("[Flowzi] Creating Stripe session...");
       const { clientSecret, sessionId } = await createCheckoutSession({
         email,
         userName: name,
       });
+
+      console.log("[Flowzi] Stripe session created:", sessionId);
 
       setClientSecret(clientSecret);
       setCheckoutSessionId(sessionId);
@@ -167,7 +176,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       setIsProcessing(false);
 
     } catch (error) {
-      console.error("Checkout creation error:", error);
+      console.error("[Flowzi] Checkout creation error:", error);
       setApiError(error instanceof Error ? error.message : "Erro ao preparar pedido. Tenta novamente.");
       setIsProcessing(false);
     }
@@ -178,34 +187,50 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     const params = new URLSearchParams(window.location.search);
     const sessionId = params.get('checkout_session_id');
     
-    if (sessionId && isOpen) {
-      handleCheckoutComplete(sessionId);
-      // Clean URL
+    if (sessionId) {
+      console.log("[Flowzi] Detected return from Stripe with sessionId:", sessionId);
+      // Clean URL immediately
       window.history.replaceState({}, '', window.location.pathname);
+      // Process the checkout
+      handleCheckoutComplete(sessionId);
     }
-  }, [isOpen]);
+  }, []);
 
   // Handle Stripe checkout completion
   const handleCheckoutComplete = async (sessionId: string) => {
     try {
       setCurrentStep("processing");
+      console.log("[Flowzi] Processing checkout for session:", sessionId);
 
       // 1. Verify payment
+      console.log("[Flowzi] Verifying payment...");
       const paymentResult = await verifyCheckout(sessionId);
+      console.log("[Flowzi] Payment verification result:", paymentResult);
       
       if (!paymentResult.success) {
         throw new Error("Pagamento não confirmado");
       }
 
       // 2. Get data from localStorage
-      const pendingJob = localStorage.getItem('flowzi_pending_job');
-      if (!pendingJob) {
-        throw new Error("Dados do pedido não encontrados");
+      const pendingJobStr = localStorage.getItem('flowzi_pending_job');
+      console.log("[Flowzi] Retrieved from localStorage:", pendingJobStr);
+      
+      if (!pendingJobStr) {
+        // Fallback: Payment confirmed but no data - show partial success
+        console.error("[Flowzi] No pending job data found in localStorage");
+        setEmail(paymentResult.email || "");
+        setApiError("Pagamento confirmado! Mas houve um problema técnico. Contacta flowzi.geral@gmail.com com o teu email para processarmos o teu vídeo manualmente.");
+        setCurrentStep("error");
+        return;
       }
       
-      const { photoUrl, videoUrl, email: savedEmail, userName } = JSON.parse(pendingJob);
+      const pendingJob = JSON.parse(pendingJobStr);
+      const { photoUrl, videoUrl, email: savedEmail, userName } = pendingJob;
+      
+      console.log("[Flowzi] Parsed pending job:", { photoUrl: photoUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50), savedEmail, userName });
 
       // 3. Send data to n8n Webhook (Production URL)
+      console.log("[Flowzi] Sending to n8n webhook...");
       const n8nResponse = await fetch("https://n8n.diogocoutinho.cloud/webhook/videosaas", {
         method: "POST",
         headers: {
@@ -221,14 +246,20 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         }),
       });
       
+      console.log("[Flowzi] n8n response status:", n8nResponse.status);
+      
       if (n8nResponse.ok) {
         localStorage.removeItem('flowzi_pending_job');
+        console.log("[Flowzi] Success! Cleared localStorage and showing success page.");
+        setEmail(savedEmail);
         setCurrentStep("success");
       } else {
-        throw new Error("Erro ao enviar para o n8n");
+        const errorText = await n8nResponse.text();
+        console.error("[Flowzi] n8n error response:", errorText);
+        throw new Error("Erro ao enviar para processamento");
       }
     } catch (error) {
-      console.error("Checkout complete error:", error);
+      console.error("[Flowzi] Checkout complete error:", error);
       setApiError(error instanceof Error ? error.message : "Erro ao finalizar. Contacta o suporte.");
       setCurrentStep("error");
     }
