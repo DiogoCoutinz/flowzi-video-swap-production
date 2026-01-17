@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw } from "lucide-react";
+import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Tag, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, generateVideo, uploadFile } from "@/lib/api";
 
@@ -23,12 +23,15 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
   const [videoFileName, setVideoFileName] = useState<string>("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
+  const [couponCode, setCouponCode] = useState("");
+  const [couponApplied, setCouponApplied] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
   const [videoError, setVideoError] = useState<string | null>(null);
   const [isValidatingImage, setIsValidatingImage] = useState(false);
   const [isValidatingVideo, setIsValidatingVideo] = useState(false);
+  const [stripeLoading, setStripeLoading] = useState(true);
   
   // API integration state
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -139,16 +142,19 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     
     setIsProcessing(true);
     setApiError(null);
+    setStripeLoading(true);
 
     try {
-      // Create Stripe checkout session (no files - just email/name)
-      const { clientSecret, sessionId } = await createCheckoutSession({
+      // Create Stripe checkout session (no files - just email/name + optional coupon)
+      const { clientSecret, sessionId, discountApplied } = await createCheckoutSession({
         email,
         userName: name,
+        couponCode: couponCode.trim() || undefined,
       });
 
       setClientSecret(clientSecret);
       setCheckoutSessionId(sessionId);
+      setCouponApplied(discountApplied || false);
       setCurrentStep("payment");
       setIsProcessing(false);
 
@@ -213,6 +219,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setVideoFileName("");
     setEmail("");
     setName("");
+    setCouponCode("");
+    setCouponApplied(false);
     setConfirmed(false);
     setImageError(null);
     setVideoError(null);
@@ -220,6 +228,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
     setClientSecret(null);
     setCheckoutSessionId(null);
+    setStripeLoading(true);
     onClose();
   };
 
@@ -232,6 +241,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setVideoFileName("");
     setEmail("");
     setName("");
+    setCouponCode("");
+    setCouponApplied(false);
     setConfirmed(false);
     setImageError(null);
     setVideoError(null);
@@ -239,6 +250,13 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
     setClientSecret(null);
     setCheckoutSessionId(null);
+    setStripeLoading(true);
+  };
+
+  // Determine modal size based on step
+  const getModalSize = () => {
+    if (currentStep === "payment") return "max-w-3xl";
+    return "max-w-xl";
   };
 
   if (!isOpen) return null;
@@ -251,22 +269,23 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         exit={{ opacity: 0 }}
         className="fixed inset-0 z-50 bg-background/98 backdrop-blur-sm overflow-y-auto"
       >
-        <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="min-h-screen flex items-center justify-center p-4 md:p-8">
           <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            className="w-full max-w-lg"
+            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+            className={`w-full ${getModalSize()} transition-all duration-300`}
           >
             {/* Close Button */}
             <button
               onClick={resetAndClose}
-              className="absolute top-4 right-4 p-2 rounded-lg hover:bg-secondary transition-colors z-10"
+              className="absolute top-4 right-4 md:top-6 md:right-6 p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all z-10 group"
             >
-              <X className="w-6 h-6" />
+              <X className="w-5 h-5 group-hover:rotate-90 transition-transform duration-300" />
             </button>
 
-            <div className="glass-card p-6 md:p-8 gradient-border">
+            <div className="glass-card p-6 md:p-10 border border-white/10 rounded-3xl shadow-2xl">
               {/* Step Indicator */}
               {!["payment", "processing", "success", "error"].includes(currentStep) && (
                 <div className="flex items-center justify-center gap-3 mb-8">
@@ -384,17 +403,24 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       </div>
                     )}
 
-                    <div className="mt-4 p-3 bg-secondary/30 rounded-lg">
+                    <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5">
                       <p className="text-xs text-muted-foreground">
-                        <strong>Requisitos:</strong> Rosto claro e bem iluminado • Proporção entre 2:5 e 5:2 • Lado maior ≥ 300px
+                        <strong className="text-foreground/80">Requisitos:</strong> Rosto claro e bem iluminado • Proporção entre 2:5 e 5:2 • Lado maior ≥ 300px
                       </p>
                     </div>
 
-                    <div className="mt-6 flex justify-end">
+                    <div className="mt-8 flex justify-between items-center">
+                      <button
+                        onClick={resetAndClose}
+                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all"
+                      >
+                        <ChevronLeft className="w-4 h-4" />
+                        Cancelar
+                      </button>
                       <button
                         onClick={() => setCurrentStep("video")}
                         disabled={!uploadedImage}
-                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all"
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3.5 rounded-xl font-semibold transition-all shadow-lg hover:shadow-primary/25"
                       >
                         Continuar
                         <ChevronRight className="w-4 h-4" />
@@ -487,13 +513,13 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       </div>
                     )}
 
-                    <div className="mt-4 p-3 bg-secondary/30 rounded-lg">
+                    <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5">
                       <p className="text-xs text-muted-foreground">
-                        <strong>Requisitos:</strong> Máximo 12 segundos • Qualquer orientação • Movimento visível do corpo
+                        <strong className="text-foreground/80">Requisitos:</strong> Máximo 12 segundos • Qualquer orientação • Movimento visível do corpo
                       </p>
                     </div>
 
-                    <div className="mt-6 flex justify-between">
+                    <div className="mt-8 flex justify-between items-center">
                       <button
                         onClick={() => setCurrentStep("upload")}
                         className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all"
@@ -504,7 +530,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       <button
                         onClick={() => setCurrentStep("checkout")}
                         disabled={!uploadedVideo}
-                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all"
+                        className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3.5 rounded-xl font-semibold transition-all shadow-lg hover:shadow-primary/25"
                       >
                         Continuar
                         <ChevronRight className="w-4 h-4" />
@@ -522,94 +548,123 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h3 className="text-lg font-semibold mb-6 text-center">Finalizar Pedido</h3>
+                    <h3 className="text-xl font-bold mb-8 text-center">Finalizar Pedido</h3>
 
                     {/* Preview */}
-                    <div className="flex gap-3 justify-center mb-6">
+                    <div className="flex gap-4 justify-center items-center mb-8 p-4 bg-secondary/30 rounded-2xl border border-white/5">
                       {uploadedImage && (
-                        <img src={uploadedImage} alt="Foto" className="w-16 h-16 rounded-lg object-cover" />
+                        <img src={uploadedImage} alt="Foto" className="w-14 h-14 rounded-xl object-cover shadow-lg" />
                       )}
-                      <div className="flex items-center text-muted-foreground">+</div>
+                      <div className="text-2xl text-muted-foreground">+</div>
                       {uploadedVideo && (
-                        <video src={uploadedVideo} className="w-16 h-16 rounded-lg object-cover" muted />
+                        <video src={uploadedVideo} className="w-14 h-14 rounded-xl object-cover shadow-lg" muted />
                       )}
-                      <div className="flex items-center text-muted-foreground">=</div>
-                      <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-                        <span className="text-2xl">✨</span>
+                      <div className="text-2xl text-muted-foreground">=</div>
+                      <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg shadow-primary/20">
+                        <Sparkles className="w-6 h-6 text-white" />
                       </div>
                     </div>
 
                     {/* Form */}
-                    <div className="space-y-4">
+                    <div className="space-y-5">
                       <div>
-                        <label className="block text-sm font-medium mb-2">Email</label>
+                        <label className="block text-sm font-semibold mb-2">Email</label>
                         <input
                           type="email"
                           value={email}
                           onChange={(e) => setEmail(e.target.value)}
                           placeholder="teu@email.com"
-                          className="w-full px-4 py-3 rounded-lg bg-secondary border border-border focus:border-primary focus:outline-none transition-colors text-sm"
+                          className="w-full px-5 py-4 rounded-xl bg-secondary/50 border border-white/10 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                         />
                       </div>
                       <div>
-                        <label className="block text-sm font-medium mb-2">Nome</label>
+                        <label className="block text-sm font-semibold mb-2">Nome</label>
                         <input
                           type="text"
                           value={name}
                           onChange={(e) => setName(e.target.value)}
                           placeholder="O teu nome"
-                          className="w-full px-4 py-3 rounded-lg bg-secondary border border-border focus:border-primary focus:outline-none transition-colors text-sm"
+                          className="w-full px-5 py-4 rounded-xl bg-secondary/50 border border-white/10 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                         />
                       </div>
-                      <label className="flex items-start gap-3 cursor-pointer">
+                      
+                      {/* Coupon Code Field */}
+                      <div>
+                        <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Tag className="w-4 h-4 text-accent" />
+                          Código de Desconto
+                          <span className="text-xs text-muted-foreground font-normal">(opcional)</span>
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="text"
+                            value={couponCode}
+                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                            placeholder="Ex: FLOWZI10"
+                            className="w-full px-5 py-4 rounded-xl bg-accent/5 border border-accent/20 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all text-base uppercase tracking-wider font-mono"
+                          />
+                          {couponCode && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                              <span className="text-xs text-accent font-semibold bg-accent/10 px-2 py-1 rounded-md">
+                                Será validado
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <p className="mt-2 text-xs text-muted-foreground">
+                          Tens um código promocional? Insere aqui para desconto.
+                        </p>
+                      </div>
+
+                      <label className="flex items-start gap-4 cursor-pointer p-4 bg-secondary/20 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                         <input
                           type="checkbox"
                           checked={confirmed}
                           onChange={(e) => setConfirmed(e.target.checked)}
-                          className="mt-1 w-4 h-4 rounded border-border text-primary focus:ring-primary"
+                          className="mt-0.5 w-5 h-5 rounded border-white/20 text-primary focus:ring-primary bg-secondary"
                         />
-                        <span className="text-xs text-muted-foreground">
-                          Confirmo que tenho permissão para usar esta foto
+                        <span className="text-sm text-muted-foreground leading-relaxed">
+                          Confirmo que tenho permissão para usar esta foto e aceito os termos de utilização.
                         </span>
                       </label>
                     </div>
 
-                    <div className="mt-6">
+                    <div className="mt-8">
                       <button
                         onClick={handleProceedToPayment}
                         disabled={!email || !name || !confirmed || isProcessing}
-                        className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-6 py-4 rounded-xl font-semibold transition-all glow-primary"
+                        className="w-full flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-6 py-5 rounded-2xl font-bold text-lg transition-all shadow-xl hover:shadow-primary/30 group"
                       >
                         {isProcessing ? (
                           <>
                             <Loader2 className="w-5 h-5 animate-spin" />
-                            A preparar...
+                            A preparar pagamento...
                           </>
                         ) : (
                           <>
-                            <Lock className="w-4 h-4" />
-                            Pagar €5 com Stripe
+                            <Lock className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                            Continuar para Pagamento
                           </>
                         )}
                       </button>
 
-                      <div className="flex items-center justify-center gap-4 mt-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Shield className="w-3 h-3" />
-                          Seguro
+                      <div className="flex items-center justify-center gap-6 mt-5 text-sm text-muted-foreground">
+                        <span className="flex items-center gap-2">
+                          <Shield className="w-4 h-4" />
+                          Pagamento Seguro
                         </span>
-                        <span className="flex items-center gap-1">
-                          <CreditCard className="w-3 h-3" />
-                          Stripe
+                        <span className="flex items-center gap-2">
+                          <CreditCard className="w-4 h-4" />
+                          Via Stripe
                         </span>
                       </div>
                     </div>
 
-                    <div className="mt-4">
+                    <div className="mt-6">
                       <button
                         onClick={() => setCurrentStep("video")}
                         disabled={isProcessing}
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all text-sm disabled:opacity-50"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50"
                       >
                         <ChevronLeft className="w-4 h-4" />
                         Voltar
@@ -627,30 +682,55 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                     exit={{ opacity: 0, x: -20 }}
                     transition={{ duration: 0.3 }}
                   >
-                    <h3 className="text-lg font-semibold mb-6 text-center">Pagamento Seguro</h3>
+                    <h3 className="text-xl font-bold mb-6 text-center">Pagamento Seguro</h3>
                     
-                    <Suspense fallback={
-                      <div className="flex items-center justify-center py-12">
-                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                    {couponApplied && (
+                      <motion.div 
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="mb-4 flex items-center justify-center gap-2 text-sm font-semibold text-green-400 bg-green-500/10 py-2 px-4 rounded-lg border border-green-500/20"
+                      >
+                        <Check className="w-4 h-4" />
+                        Desconto aplicado!
+                      </motion.div>
+                    )}
+                    
+                    {/* Stripe Loading State */}
+                    {stripeLoading && (
+                      <div className="flex flex-col items-center justify-center py-16 gap-4">
+                        <div className="relative">
+                          <div className="w-16 h-16 border-4 border-primary/20 rounded-full" />
+                          <div className="absolute inset-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                        </div>
+                        <div className="text-center">
+                          <p className="font-semibold text-foreground">A carregar pagamento...</p>
+                          <p className="text-sm text-muted-foreground mt-1">Stripe checkout seguro</p>
+                        </div>
                       </div>
-                    }>
-                      <StripeCheckout
-                        clientSecret={clientSecret}
-                        onComplete={() => {
-                          if (checkoutSessionId) {
-                            handleCheckoutComplete(checkoutSessionId);
-                          }
-                        }}
-                      />
-                    </Suspense>
+                    )}
+                    
+                    <div className={stripeLoading ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}>
+                      <Suspense fallback={null}>
+                        <StripeCheckout
+                          clientSecret={clientSecret}
+                          onReady={() => setStripeLoading(false)}
+                          onComplete={() => {
+                            if (checkoutSessionId) {
+                              handleCheckoutComplete(checkoutSessionId);
+                            }
+                          }}
+                        />
+                      </Suspense>
+                    </div>
 
-                    <div className="mt-4">
+                    <div className="mt-6">
                       <button
                         onClick={() => {
                           setClientSecret(null);
+                          setStripeLoading(true);
                           setCurrentStep("checkout");
                         }}
-                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all text-sm"
+                        className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all"
                       >
                         <ChevronLeft className="w-4 h-4" />
                         Voltar

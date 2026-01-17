@@ -224,5 +224,3 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
 };
 
 export default HeroSection;
-
-export default HeroSection;

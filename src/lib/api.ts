@@ -7,11 +7,13 @@ const API_BASE = import.meta.env.PROD
 export interface CheckoutRequest {
   email: string;
   userName: string;
+  couponCode?: string;
 }
 
 export interface CheckoutResponse {
   clientSecret: string;
   sessionId: string;
+  discountApplied?: boolean;
   error?: string;
 }
 

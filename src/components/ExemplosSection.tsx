@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Play, Volume2, VolumeX } from "lucide-react";
+import { Play, Volume2, VolumeX, Sparkles } from "lucide-react";
 import { useState, useRef } from "react";
 
 const examples = [
