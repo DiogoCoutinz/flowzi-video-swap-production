@@ -1,10 +1,7 @@
 import { useState } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import ComoFunciona from "@/components/ComoFunciona";
 import ExemplosSection from "@/components/ExemplosSection";
-import BeneficiosSection from "@/components/BeneficiosSection";
-import TestimonialsSection from "@/components/TestimonialsSection";
 import PrecosSection from "@/components/PrecosSection";
 import FAQSection from "@/components/FAQSection";
 import CTASection from "@/components/CTASection";
@@ -18,10 +15,7 @@ const Index = () => {
     <div className="min-h-screen bg-background">
       <Header onOpenModal={() => setIsModalOpen(true)} />
       <HeroSection onOpenModal={() => setIsModalOpen(true)} />
-      <ComoFunciona />
       <ExemplosSection />
-      <BeneficiosSection />
-      <TestimonialsSection />
       <PrecosSection onOpenModal={() => setIsModalOpen(true)} />
       <FAQSection />
       <CTASection onOpenModal={() => setIsModalOpen(true)} />
