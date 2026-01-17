@@ -1,6 +1,5 @@
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import { useCallback } from "react";
 
 const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
@@ -8,17 +7,9 @@ const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 interface StripeCheckoutProps {
   clientSecret: string;
   onComplete: () => void;
-  onReady?: () => void;
 }
 
-const StripeCheckoutComponent = ({ clientSecret, onComplete, onReady }: StripeCheckoutProps) => {
-  const handleReady = useCallback(() => {
-    // Small delay to ensure UI is fully rendered
-    setTimeout(() => {
-      onReady?.();
-    }, 100);
-  }, [onReady]);
-
+const StripeCheckoutComponent = ({ clientSecret, onComplete }: StripeCheckoutProps) => {
   if (!stripePromise) {
     return (
       <div className="p-8 text-center text-destructive">
@@ -28,7 +19,7 @@ const StripeCheckoutComponent = ({ clientSecret, onComplete, onReady }: StripeCh
   }
 
   return (
-    <div className="rounded-2xl overflow-hidden bg-white shadow-xl min-h-[400px]">
+    <div className="rounded-2xl overflow-hidden bg-white shadow-xl">
       <EmbeddedCheckoutProvider
         stripe={stripePromise}
         options={{
@@ -36,7 +27,7 @@ const StripeCheckoutComponent = ({ clientSecret, onComplete, onReady }: StripeCh
           onComplete,
         }}
       >
-        <EmbeddedCheckout onReady={handleReady} />
+        <EmbeddedCheckout />
       </EmbeddedCheckoutProvider>
     </div>
   );

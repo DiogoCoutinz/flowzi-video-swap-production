@@ -29,7 +29,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
   const [videoError, setVideoError] = useState<string | null>(null);
   const [isValidatingImage, setIsValidatingImage] = useState(false);
   const [isValidatingVideo, setIsValidatingVideo] = useState(false);
-  const [stripeLoading, setStripeLoading] = useState(true);
   
   // API integration state
   const [taskId, setTaskId] = useState<string | null>(null);
@@ -140,7 +139,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     
     setIsProcessing(true);
     setApiError(null);
-    setStripeLoading(true);
 
     try {
       // Create Stripe checkout session (no files - just email/name)
@@ -222,7 +220,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
     setClientSecret(null);
     setCheckoutSessionId(null);
-    setStripeLoading(true);
     onClose();
   };
 
@@ -242,7 +239,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setApiError(null);
     setClientSecret(null);
     setCheckoutSessionId(null);
-    setStripeLoading(true);
   };
 
   // Determine modal size based on step
@@ -648,41 +644,26 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                   >
                     <h3 className="text-xl font-bold mb-6 text-center">Pagamento Seguro</h3>
                     
-                    {/* Stripe Loading Overlay */}
-                    <div className="relative">
-                      {stripeLoading && (
-                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-2xl min-h-[400px]">
-                          <div className="relative mb-4">
-                            <div className="w-12 h-12 border-4 border-primary/20 rounded-full" />
-                            <div className="absolute inset-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-                          </div>
-                          <p className="font-medium text-foreground">A carregar...</p>
-                          <p className="text-sm text-muted-foreground">Stripe checkout seguro</p>
-                        </div>
-                      )}
-                      
-                      <Suspense fallback={
-                        <div className="flex items-center justify-center min-h-[400px]">
-                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
-                        </div>
-                      }>
-                        <StripeCheckout
-                          clientSecret={clientSecret}
-                          onReady={() => setStripeLoading(false)}
-                          onComplete={() => {
-                            if (checkoutSessionId) {
-                              handleCheckoutComplete(checkoutSessionId);
-                            }
-                          }}
-                        />
-                      </Suspense>
-                    </div>
+                    <Suspense fallback={
+                      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
+                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                        <p className="text-muted-foreground">A carregar Stripe...</p>
+                      </div>
+                    }>
+                      <StripeCheckout
+                        clientSecret={clientSecret}
+                        onComplete={() => {
+                          if (checkoutSessionId) {
+                            handleCheckoutComplete(checkoutSessionId);
+                          }
+                        }}
+                      />
+                    </Suspense>
 
                     <div className="mt-6">
                       <button
                         onClick={() => {
                           setClientSecret(null);
-                          setStripeLoading(true);
                           setCurrentStep("checkout");
                         }}
                         className="flex items-center gap-2 text-muted-foreground hover:text-foreground px-4 py-2 rounded-lg font-medium transition-all"
