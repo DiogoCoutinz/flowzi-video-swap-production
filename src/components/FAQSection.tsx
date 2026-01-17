@@ -9,19 +9,15 @@ import {
 const faqs = [
   {
     question: "Quanto tempo demora?",
-    answer: "Entre 5-10 minutos. Recebes um email quando estiver pronto.",
+    answer: "5-10 minutos. Recebes um email quando estiver pronto.",
   },
   {
-    question: "Que formatos de foto funcionam?",
-    answer: "JPG, PNG. Certifica-te que o rosto está claro e bem iluminado.",
+    question: "Que formatos funcionam?",
+    answer: "Foto: JPG, PNG, WEBP (máx 10MB). Vídeo: MP4, MOV, MKV (máx 100MB, 12 seg).",
   },
   {
     question: "Os meus dados estão seguros?",
-    answer: "Sim. Apagamos todas as fotos e vídeos após 24 horas automaticamente.",
-  },
-  {
-    question: "Posso usar qualquer foto?",
-    answer: "Deves ter permissão para usar a foto. Não aceitamos fotos de menores sem consentimento.",
+    answer: "Sim. Apagamos tudo após 24 horas automaticamente.",
   },
   {
     question: "E se não ficar satisfeito?",

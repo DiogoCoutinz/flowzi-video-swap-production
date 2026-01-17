@@ -20,7 +20,6 @@ const Header = ({ onOpenModal }: HeaderProps) => {
   }, []);
 
   const navLinks = [
-    { href: "#como-funciona", label: "Como Funciona" },
     { href: "#exemplos", label: "Exemplos" },
     { href: "#precos", label: "Preços" },
     { href: "#faq", label: "FAQ" },
@@ -35,14 +34,14 @@ const Header = ({ onOpenModal }: HeaderProps) => {
         isScrolled ? "bg-background/90 backdrop-blur-lg border-b border-border/30" : "bg-transparent"
       }`}
     >
-      <div className="container mx-auto px-6 py-4 flex items-center justify-between">
+      <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <a href="#" className="flex items-center gap-2">
-          <img src={flowziLogo} alt="Flowzi" className="h-9 w-auto" />
-          <span className="text-xl font-bold gradient-text">Flowzi</span>
+          <img src={flowziLogo} alt="Flowzi" className="h-8 w-auto" />
+          <span className="text-lg font-bold gradient-text">Flowzi</span>
         </a>
 
         {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center gap-8">
+        <nav className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <a
               key={link.href}
@@ -56,9 +55,9 @@ const Header = ({ onOpenModal }: HeaderProps) => {
 
         <button
           onClick={onOpenModal}
-          className="hidden md:flex items-center bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-2.5 rounded-lg font-semibold text-sm transition-all hover:glow-primary"
+          className="hidden md:flex items-center bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg font-semibold text-sm transition-all hover:glow-primary"
         >
-          Começar
+          Criar Vídeo
         </button>
 
         {/* Mobile Menu Button */}
@@ -75,9 +74,9 @@ const Header = ({ onOpenModal }: HeaderProps) => {
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="md:hidden bg-background/95 backdrop-blur-lg border-b border-border/30 px-6 py-4"
+          className="md:hidden bg-background/95 backdrop-blur-lg border-b border-border/30 px-4 py-4"
         >
-          <nav className="flex flex-col gap-4">
+          <nav className="flex flex-col gap-3">
             {navLinks.map((link) => (
               <a
                 key={link.href}
@@ -95,7 +94,7 @@ const Header = ({ onOpenModal }: HeaderProps) => {
               }}
               className="bg-primary hover:bg-primary/90 text-primary-foreground px-5 py-3 rounded-lg font-semibold transition-all mt-2"
             >
-              Começar
+              Criar Vídeo
             </button>
           </nav>
         </motion.div>
