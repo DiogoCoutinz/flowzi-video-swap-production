@@ -227,8 +227,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                         <ImageIcon className="w-5 h-5 text-primary" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold">Carrega a Tua Foto</h3>
-                        <p className="text-sm text-muted-foreground">A cara que vai aparecer no vídeo</p>
+                        <h3 className="text-lg font-semibold">Quem vai aparecer?</h3>
+                        <p className="text-sm text-muted-foreground">Carrega uma foto com rosto visível</p>
                       </div>
                     </div>
 
@@ -327,8 +327,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                         <Video className="w-5 h-5 text-accent" />
                       </div>
                       <div>
-                        <h3 className="text-lg font-semibold">Carrega o Vídeo de Referência</h3>
-                        <p className="text-sm text-muted-foreground">O vídeo com a dança/movimento</p>
+                        <h3 className="text-lg font-semibold">Onde queres aparecer?</h3>
+                        <p className="text-sm text-muted-foreground">Carrega o vídeo (máx 12 segundos)</p>
                       </div>
                     </div>
 
