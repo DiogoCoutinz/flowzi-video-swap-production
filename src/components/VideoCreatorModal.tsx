@@ -1,13 +1,16 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
-import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, generateVideo, uploadFile } from "@/lib/api";
 
-// Load Stripe outside of component to avoid recreating on each render
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+// Lazy load Stripe to avoid forwardRef conflicts
+const stripePromise = typeof window !== 'undefined' 
+  ? import("@stripe/stripe-js").then(m => m.loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""))
+  : null;
+
+// Lazy load Stripe React components
+const StripeCheckout = lazy(() => import("./StripeCheckout"));
 
 type Step = "upload" | "video" | "checkout" | "payment" | "processing" | "success" | "error";
 
@@ -631,22 +634,20 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                   >
                     <h3 className="text-lg font-semibold mb-6 text-center">Pagamento Seguro</h3>
                     
-                    <div className="rounded-lg overflow-hidden bg-white">
-                      <EmbeddedCheckoutProvider
-                        stripe={stripePromise}
-                        options={{
-                          clientSecret,
-                          onComplete: () => {
-                            // Use the stored sessionId
-                            if (checkoutSessionId) {
-                              handleCheckoutComplete(checkoutSessionId);
-                            }
-                          },
+                    <Suspense fallback={
+                      <div className="flex items-center justify-center py-12">
+                        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                      </div>
+                    }>
+                      <StripeCheckout
+                        clientSecret={clientSecret}
+                        onComplete={() => {
+                          if (checkoutSessionId) {
+                            handleCheckoutComplete(checkoutSessionId);
+                          }
                         }}
-                      >
-                        <EmbeddedCheckout />
-                      </EmbeddedCheckoutProvider>
-                    </div>
+                      />
+                    </Suspense>
 
                     <div className="mt-4">
                       <button
