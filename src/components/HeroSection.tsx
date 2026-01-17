@@ -21,7 +21,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
       "/InfluencerFinal.mov",
       "/cotrim.mp4",
       "/videolanding1.mp4",
-      "/videolanding2.mp4"
+      "/videolanding2.mov"
     ];
     
     videosToPreload.forEach(src => {
@@ -68,7 +68,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
         >
           <div className="w-full h-full rounded-[22px] overflow-hidden bg-black">
             <video 
-              src="/videolanding2.mp4" 
+              src="/videolanding2.mov" 
               autoPlay 
               loop 
               muted 

@@ -28,7 +28,7 @@ const examples = [
     id: 5, 
     title: "Trending", 
     subtitle: "Viral Style",
-    videoUrl: "/videolanding2.mp4",
+    videoUrl: "/videolanding2.mov",
     gradient: "from-green-500 via-emerald-500 to-teal-500",
   },
   { 

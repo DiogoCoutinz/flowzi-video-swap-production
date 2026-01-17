@@ -648,22 +648,24 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                   >
                     <h3 className="text-xl font-bold mb-6 text-center">Pagamento Seguro</h3>
                     
-                    {/* Stripe Loading State */}
-                    {stripeLoading && (
-                      <div className="flex flex-col items-center justify-center py-16 gap-4">
-                        <div className="relative">
-                          <div className="w-16 h-16 border-4 border-primary/20 rounded-full" />
-                          <div className="absolute inset-0 w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                    {/* Stripe Loading Overlay */}
+                    <div className="relative">
+                      {stripeLoading && (
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm rounded-2xl min-h-[400px]">
+                          <div className="relative mb-4">
+                            <div className="w-12 h-12 border-4 border-primary/20 rounded-full" />
+                            <div className="absolute inset-0 w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+                          </div>
+                          <p className="font-medium text-foreground">A carregar...</p>
+                          <p className="text-sm text-muted-foreground">Stripe checkout seguro</p>
                         </div>
-                        <div className="text-center">
-                          <p className="font-semibold text-foreground">A carregar pagamento...</p>
-                          <p className="text-sm text-muted-foreground mt-1">Stripe checkout seguro</p>
+                      )}
+                      
+                      <Suspense fallback={
+                        <div className="flex items-center justify-center min-h-[400px]">
+                          <Loader2 className="w-8 h-8 animate-spin text-primary" />
                         </div>
-                      </div>
-                    )}
-                    
-                    <div className={stripeLoading ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}>
-                      <Suspense fallback={null}>
+                      }>
                         <StripeCheckout
                           clientSecret={clientSecret}
                           onReady={() => setStripeLoading(false)}
