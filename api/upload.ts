@@ -12,6 +12,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         // Aqui podes validar se o utilizador pode fazer upload
         return {
           allowedContentTypes: ['image/jpeg', 'image/png', 'image/webp', 'video/mp4', 'video/quicktime', 'video/x-matroska'],
+          addRandomSuffix: true, // Gera nomes únicos para evitar conflitos
           tokenPayload: JSON.stringify({
             // Informação extra se quiseres
           }),
