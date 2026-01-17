@@ -551,7 +551,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                         <label className="cursor-pointer block">
                           <input
                             type="file"
-                            accept="video/mp4,video/quicktime,video/x-matroska"
+                            accept="video/mp4"
                             onChange={handleVideoUpload}
                             className="hidden"
                           />
@@ -561,7 +561,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                             </div>
                             <div>
                               <p className="font-medium text-sm">Arrasta ou clica para escolher</p>
-                              <p className="text-xs text-muted-foreground mt-1">MP4, MOV ou MKV • Máx 100MB</p>
+                              <p className="text-xs text-muted-foreground mt-1">MP4 • Máx 100MB</p>
                             </div>
                           </div>
                         </label>

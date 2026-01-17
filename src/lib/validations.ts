@@ -23,8 +23,8 @@ export const videoValidationSchema = z.object({
     message: "O vídeo deve ter no máximo 100 MB",
   })
   .refine(
-    (file) => ['video/mp4', 'video/quicktime', 'video/x-matroska'].includes(file.type),
-    { message: "Formato inválido. Use MP4, MOV ou MKV" }
+    (file) => ['video/mp4'].includes(file.type),
+    { message: "Formato inválido. Use MP4" }
   ),
 });
 
