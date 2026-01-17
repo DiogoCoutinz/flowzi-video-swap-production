@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Tag, Sparkles } from "lucide-react";
+import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, generateVideo, uploadFile } from "@/lib/api";
 
@@ -23,8 +23,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
   const [videoFileName, setVideoFileName] = useState<string>("");
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
-  const [couponCode, setCouponCode] = useState("");
-  const [couponApplied, setCouponApplied] = useState(false);
   const [confirmed, setConfirmed] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [imageError, setImageError] = useState<string | null>(null);
@@ -145,16 +143,14 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setStripeLoading(true);
 
     try {
-      // Create Stripe checkout session (no files - just email/name + optional coupon)
-      const { clientSecret, sessionId, discountApplied } = await createCheckoutSession({
+      // Create Stripe checkout session (no files - just email/name)
+      const { clientSecret, sessionId } = await createCheckoutSession({
         email,
         userName: name,
-        couponCode: couponCode.trim() || undefined,
       });
 
       setClientSecret(clientSecret);
       setCheckoutSessionId(sessionId);
-      setCouponApplied(discountApplied || false);
       setCurrentStep("payment");
       setIsProcessing(false);
 
@@ -219,8 +215,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setVideoFileName("");
     setEmail("");
     setName("");
-    setCouponCode("");
-    setCouponApplied(false);
     setConfirmed(false);
     setImageError(null);
     setVideoError(null);
@@ -241,8 +235,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     setVideoFileName("");
     setEmail("");
     setName("");
-    setCouponCode("");
-    setCouponApplied(false);
     setConfirmed(false);
     setImageError(null);
     setVideoError(null);
@@ -587,34 +579,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                           className="w-full px-5 py-4 rounded-xl bg-secondary/50 border border-white/10 focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all text-base"
                         />
                       </div>
-                      
-                      {/* Coupon Code Field */}
-                      <div>
-                        <label className="block text-sm font-semibold mb-2 flex items-center gap-2">
-                          <Tag className="w-4 h-4 text-accent" />
-                          Código de Desconto
-                          <span className="text-xs text-muted-foreground font-normal">(opcional)</span>
-                        </label>
-                        <div className="relative">
-                          <input
-                            type="text"
-                            value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
-                            placeholder="Ex: FLOWZI10"
-                            className="w-full px-5 py-4 rounded-xl bg-accent/5 border border-accent/20 focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 transition-all text-base uppercase tracking-wider font-mono"
-                          />
-                          {couponCode && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
-                              <span className="text-xs text-accent font-semibold bg-accent/10 px-2 py-1 rounded-md">
-                                Será validado
-                              </span>
-                            </div>
-                          )}
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          Tens um código promocional? Insere aqui para desconto.
-                        </p>
-                      </div>
 
                       <label className="flex items-start gap-4 cursor-pointer p-4 bg-secondary/20 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
                         <input
@@ -683,17 +647,6 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                     transition={{ duration: 0.3 }}
                   >
                     <h3 className="text-xl font-bold mb-6 text-center">Pagamento Seguro</h3>
-                    
-                    {couponApplied && (
-                      <motion.div 
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="mb-4 flex items-center justify-center gap-2 text-sm font-semibold text-green-400 bg-green-500/10 py-2 px-4 rounded-lg border border-green-500/20"
-                      >
-                        <Check className="w-4 h-4" />
-                        Desconto aplicado!
-                      </motion.div>
-                    )}
                     
                     {/* Stripe Loading State */}
                     {stripeLoading && (

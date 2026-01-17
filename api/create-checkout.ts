@@ -8,7 +8,6 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 interface CheckoutRequest {
   email: string;
   userName: string;
-  couponCode?: string;
 }
 
 export default async function handler(
@@ -20,7 +19,7 @@ export default async function handler(
   }
 
   try {
-    const { email, userName, couponCode } = req.body as CheckoutRequest;
+    const { email, userName } = req.body as CheckoutRequest;
 
     if (!email || !userName) {
       return res.status(400).json({
@@ -41,8 +40,8 @@ export default async function handler(
       ? `https://${process.env.VERCEL_URL}`
       : process.env.APP_URL || "http://localhost:8080";
 
-    // Build checkout session options
-    const sessionOptions: Stripe.Checkout.SessionCreateParams = {
+    // Create Checkout Session with embedded mode and promotion codes enabled
+    const session = await stripe.checkout.sessions.create({
       ui_mode: "embedded",
       mode: "payment",
       customer_email: email,
@@ -55,47 +54,13 @@ export default async function handler(
       metadata: {
         userName,
       },
+      allow_promotion_codes: true, // Enable native Stripe promo code field
       return_url: `${APP_URL}/?checkout_session_id={CHECKOUT_SESSION_ID}`,
-    };
-
-    // Add coupon/promotion code if provided
-    if (couponCode && couponCode.trim()) {
-      // Try to find promotion code by code name
-      try {
-        const promotionCodes = await stripe.promotionCodes.list({
-          code: couponCode.trim().toUpperCase(),
-          active: true,
-          limit: 1,
-        });
-
-        if (promotionCodes.data.length > 0) {
-          sessionOptions.discounts = [
-            { promotion_code: promotionCodes.data[0].id }
-          ];
-        } else {
-          // Try as coupon ID directly
-          try {
-            const coupon = await stripe.coupons.retrieve(couponCode.trim().toUpperCase());
-            if (coupon && coupon.valid) {
-              sessionOptions.discounts = [{ coupon: coupon.id }];
-            }
-          } catch {
-            // Coupon not found - continue without discount
-            console.log(`Coupon/promo code not found: ${couponCode}`);
-          }
-        }
-      } catch (promoError) {
-        console.log(`Error looking up promo code: ${promoError}`);
-      }
-    }
-
-    // Create Checkout Session with embedded mode
-    const session = await stripe.checkout.sessions.create(sessionOptions);
+    });
 
     return res.status(200).json({
       clientSecret: session.client_secret,
       sessionId: session.id,
-      discountApplied: !!sessionOptions.discounts,
     });
   } catch (error) {
     console.error("Create checkout error:", error);
