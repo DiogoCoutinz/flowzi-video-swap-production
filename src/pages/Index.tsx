@@ -1,23 +1,32 @@
-import Navbar from "@/components/Navbar";
+import { useState } from "react";
+import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import HowItWorks from "@/components/HowItWorks";
-import ExamplesGallery from "@/components/ExamplesGallery";
-import VideoCreator from "@/components/VideoCreator";
-import PricingSection from "@/components/PricingSection";
+import ComoFunciona from "@/components/ComoFunciona";
+import ExemplosSection from "@/components/ExemplosSection";
+import BeneficiosSection from "@/components/BeneficiosSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
+import PrecosSection from "@/components/PrecosSection";
 import FAQSection from "@/components/FAQSection";
+import CTASection from "@/components/CTASection";
 import Footer from "@/components/Footer";
+import VideoCreatorModal from "@/components/VideoCreatorModal";
 
 const Index = () => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
-      <HeroSection />
-      <HowItWorks />
-      <ExamplesGallery />
-      <VideoCreator />
-      <PricingSection />
+      <Header onOpenModal={() => setIsModalOpen(true)} />
+      <HeroSection onOpenModal={() => setIsModalOpen(true)} />
+      <ComoFunciona />
+      <ExemplosSection />
+      <BeneficiosSection />
+      <TestimonialsSection />
+      <PrecosSection onOpenModal={() => setIsModalOpen(true)} />
       <FAQSection />
+      <CTASection onOpenModal={() => setIsModalOpen(true)} />
       <Footer />
+      <VideoCreatorModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
     </div>
   );
 };
