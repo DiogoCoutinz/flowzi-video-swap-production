@@ -183,19 +183,25 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         uploadFile(videoFile),
       ]);
 
-      // 3. Start video generation on Kie.ai
-      const result = await generateVideo({
-        photoUrl,
-        videoUrl,
-        email,
-        userName: name,
+      // 3. Send data to n8n Webhook
+      const n8nResponse = await fetch("https://n8n.diogocoutinho.cloud/webhook/videosaas", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          photoUrl,
+          videoUrl,
+          email,
+          userName: name,
+          timestamp: new Date().toISOString(),
+        }),
       });
       
-      if (result.success) {
-        setTaskId(result.taskId);
+      if (n8nResponse.ok) {
         setCurrentStep("success");
       } else {
-        throw new Error(result.error || "Erro ao processar");
+        throw new Error("Erro ao enviar para processamento no n8n");
       }
     } catch (error) {
       console.error("Checkout complete error:", error);

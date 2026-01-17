@@ -138,32 +138,19 @@ export async function checkVideoStatus(
   return result;
 }
 
+import { upload } from '@vercel/blob/client';
+
 /**
- * Upload file to get URL
- * 
- * ⚠️ PRODUCTION WARNING: This uses base64 data URLs which:
- * - Will fail for large videos (100MB = ~133MB base64)
- * - Will hit request body limits
- * 
- * For production, implement upload to S3/Cloudflare R2:
- * 1. Get presigned URL from backend
- * 2. Upload directly to S3 from browser
- * 3. Return the S3 URL
+ * Upload file directly to Vercel Blob from the client (browser)
+ * This avoids the 4.5MB limit of server-side uploads.
  */
 export async function uploadFile(file: File): Promise<string> {
-  // For files > 5MB, warn in console
-  if (file.size > 5 * 1024 * 1024) {
-    console.warn(`Large file upload (${(file.size / 1024 / 1024).toFixed(1)}MB) - consider implementing S3 upload`);
-  }
-
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      resolve(reader.result as string);
-    };
-    reader.onerror = () => reject(new Error("Erro ao ler ficheiro"));
-    reader.readAsDataURL(file);
+  const blob = await upload(file.name, file, {
+    access: 'public',
+    handleUploadUrl: '/api/upload',
   });
+
+  return blob.url;
 }
 
 /**
