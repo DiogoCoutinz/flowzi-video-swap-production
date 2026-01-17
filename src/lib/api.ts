@@ -58,7 +58,15 @@ export async function createCheckoutSession(
     body: JSON.stringify(data),
   });
 
-  const result = await response.json();
+  let result;
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    result = await response.json();
+  } else {
+    const text = await response.text();
+    console.error("Server returned non-JSON response:", text);
+    throw new Error(`Erro no servidor (${response.status}). Verifica as logs na Vercel.`);
+  }
 
   if (!response.ok) {
     throw new Error(result.error || "Erro ao criar sessão de pagamento");

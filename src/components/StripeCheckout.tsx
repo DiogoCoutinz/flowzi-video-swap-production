@@ -1,7 +1,8 @@
 import { EmbeddedCheckoutProvider, EmbeddedCheckout } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+const stripeKey = import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY;
+const stripePromise = stripeKey ? loadStripe(stripeKey) : null;
 
 interface StripeCheckoutProps {
   clientSecret: string;
@@ -9,6 +10,14 @@ interface StripeCheckoutProps {
 }
 
 const StripeCheckoutComponent = ({ clientSecret, onComplete }: StripeCheckoutProps) => {
+  if (!stripePromise) {
+    return (
+      <div className="p-8 text-center text-destructive">
+        <p>Erro: VITE_STRIPE_PUBLISHABLE_KEY não configurada.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="rounded-lg overflow-hidden bg-white">
       <EmbeddedCheckoutProvider

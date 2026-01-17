@@ -4,11 +4,6 @@ import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, 
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, generateVideo, uploadFile } from "@/lib/api";
 
-// Lazy load Stripe to avoid forwardRef conflicts
-const stripePromise = typeof window !== 'undefined' 
-  ? import("@stripe/stripe-js").then(m => m.loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""))
-  : null;
-
 // Lazy load Stripe React components
 const StripeCheckout = lazy(() => import("./StripeCheckout"));
 
