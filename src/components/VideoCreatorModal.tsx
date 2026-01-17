@@ -803,7 +803,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                     </div>
 
                     <p className="mt-6 text-xs text-muted-foreground/60">
-                      Se o problema persistir, contacta suporte@flowzi.pt
+                      Se o problema persistir, contacta flowzi.geral@gmail.com
                     </p>
                   </motion.div>
                 )}

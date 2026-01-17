@@ -9,11 +9,11 @@ import {
 const faqs = [
   {
     question: "Quanto tempo demora?",
-    answer: "5-10 minutos. Recebes um email quando estiver pronto.",
+    answer: "8-14 minutos. Recebes um email quando estiver pronto.",
   },
   {
     question: "Que formatos funcionam?",
-    answer: "Foto: JPG, PNG, WEBP (máx 10MB). Vídeo: MP4, MOV, MKV (máx 100MB, 12 seg).",
+    answer: "Foto: JPG, PNG, WEBP (máx 10MB). Vídeoß MP4, MOV, MKV (máx 100MB, 12 seg).",
   },
   {
     question: "Os meus dados estão seguros?",

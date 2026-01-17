@@ -20,23 +20,19 @@ export default async function handler(
       return res.status(400).json({ error: "Session ID em falta" });
     }
 
-    // Retrieve the session to verify payment
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     if (session.payment_status !== "paid") {
       return res.status(400).json({ error: "Pagamento não confirmado" });
     }
 
-    // Return success - frontend will handle Kie.ai submission
     return res.status(200).json({
       success: true,
       email: session.customer_email,
       userName: session.metadata?.userName,
     });
   } catch (error) {
-    console.error("Checkout complete error:", error);
-    return res.status(500).json({
-      error: "Erro ao verificar pagamento",
-    });
+    console.error("Checkout verify error:", error);
+    return res.status(500).json({ error: "Erro ao verificar pagamento" });
   }
 }

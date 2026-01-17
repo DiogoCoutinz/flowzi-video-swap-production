@@ -65,7 +65,7 @@ function generateFailureEmailHtml(userName: string): string {
     <p>Infelizmente houve um problema a processar o teu vídeo. Não te preocupes - vamos reembolsar o teu pagamento automaticamente.</p>
     <p>Se quiseres, podes tentar novamente com uma foto ou vídeo diferente.</p>
     <div class="footer">
-      <p>Precisas de ajuda? Contacta-nos em suporte@flowzi.pt</p>
+      <p>Precisas de ajuda? Contacta-nos em flowzi.geral@gmail.com</p>
       <p>© ${year} Flowzi. Todos os direitos reservados.</p>
     </div>
   </div>
@@ -95,6 +95,7 @@ async function sendEmail(
       body: JSON.stringify({
         from: "Flowzi <geral@flowzi.pt>",
         to: [to],
+        reply_to: "flowzi.geral@gmail.com",
         subject,
         html,
       }),
