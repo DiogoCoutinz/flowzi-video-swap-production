@@ -8,28 +8,24 @@ import {
 
 const faqs = [
   {
-    question: "How long does it take to process my video?",
-    answer: "Most videos are processed within 5-10 minutes. Once complete, you'll receive an email notification with a download link that never expires.",
+    question: "Quanto tempo demora?",
+    answer: "Entre 5-10 minutos. Recebes um email quando estiver pronto.",
   },
   {
-    question: "What photo requirements work best?",
-    answer: "We recommend a clear, front-facing photo with good lighting. Avoid sunglasses, hats, or anything covering your face. Higher resolution photos produce better results.",
+    question: "Que formatos de foto funcionam?",
+    answer: "JPG, PNG. Certifica-te que o rosto está claro e bem iluminado.",
   },
   {
-    question: "Is my data safe and private?",
-    answer: "Absolutely. We use bank-level encryption to protect your data. Your photos are processed securely and automatically deleted after 24 hours. We never share your data with third parties.",
+    question: "Os meus dados estão seguros?",
+    answer: "Sim. Apagamos todas as fotos e vídeos após 24 horas automaticamente.",
   },
   {
-    question: "Can I use any photo?",
-    answer: "You must have permission to use any photo you upload. Please only use photos of yourself or photos where you have explicit consent from the person pictured.",
+    question: "Posso usar qualquer foto?",
+    answer: "Deves ter permissão para usar a foto. Não aceitamos fotos de menores sem consentimento.",
   },
   {
-    question: "What if I'm not satisfied with the result?",
-    answer: "We strive for the best quality, but AI results can vary. If you're not happy with your video, contact our support team within 24 hours and we'll work to make it right or offer a refund.",
-  },
-  {
-    question: "What video formats are supported?",
-    answer: "We deliver videos in MP4 format, which is compatible with virtually all devices and social media platforms including TikTok, Instagram, Facebook, and WhatsApp.",
+    question: "E se não ficar satisfeito?",
+    answer: "Contacta-nos em até 24h e reembolsamos sem questões.",
   },
 ];
 
@@ -45,11 +41,8 @@ const FAQSection = () => {
           className="text-center mb-12"
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
-            Frequently Asked <span className="gradient-text">Questions</span>
+            Perguntas <span className="gradient-text">Frequentes</span>
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Everything you need to know about Flowzi
-          </p>
         </motion.div>
 
         <motion.div
@@ -57,19 +50,19 @@ const FAQSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="max-w-3xl mx-auto"
+          className="max-w-2xl mx-auto"
         >
-          <Accordion type="single" collapsible className="space-y-4">
+          <Accordion type="single" collapsible className="space-y-3">
             {faqs.map((faq, index) => (
               <AccordionItem
                 key={index}
                 value={`item-${index}`}
-                className="glass-card rounded-xl px-6 border-0 gradient-border"
+                className="glass-card rounded-xl px-6 border-0"
               >
-                <AccordionTrigger className="text-left hover:no-underline py-5">
-                  <span className="font-medium">{faq.question}</span>
+                <AccordionTrigger className="text-left hover:no-underline py-4">
+                  <span className="font-medium text-sm">{faq.question}</span>
                 </AccordionTrigger>
-                <AccordionContent className="text-muted-foreground pb-5">
+                <AccordionContent className="text-muted-foreground pb-4 text-sm">
                   {faq.answer}
                 </AccordionContent>
               </AccordionItem>

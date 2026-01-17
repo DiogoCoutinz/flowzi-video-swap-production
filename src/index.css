@@ -6,23 +6,23 @@
 
 @layer base {
   :root {
-    /* Flowzi Dark Theme - Blue/Purple SaaS */
+    /* Flowzi Dark Theme */
     --background: 222.2 47.4% 11.2%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 47.4% 13%;
+    --card: 222.2 47.4% 14%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 47.4% 11.2%;
     --popover-foreground: 210 40% 98%;
 
     --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary-foreground: 210 40% 98%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
+    --muted: 217.2 32.6% 20%;
     --muted-foreground: 215 20.2% 65.1%;
 
     --accent: 270 95.2% 64.9%;
@@ -31,19 +31,12 @@
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 22%;
+    --border: 217.2 32.6% 25%;
     --input: 217.2 32.6% 17.5%;
     --ring: 217.2 91.2% 59.8%;
 
     --radius: 0.75rem;
 
-    /* Custom Flowzi Variables */
-    --gradient-primary: linear-gradient(135deg, hsl(217.2 91.2% 59.8%), hsl(270 95.2% 64.9%));
-    --gradient-dark: linear-gradient(180deg, hsl(222.2 47.4% 11.2%), hsl(222.2 47.4% 8%));
-    --gradient-card: linear-gradient(145deg, hsl(222.2 47.4% 15% / 0.8), hsl(222.2 47.4% 11.2% / 0.6));
-    --glow-primary: 0 0 40px hsl(217.2 91.2% 59.8% / 0.3);
-    --glow-accent: 0 0 40px hsl(270 95.2% 64.9% / 0.3);
-    
     --sidebar-background: 222.2 47.4% 11.2%;
     --sidebar-foreground: 210 40% 98%;
     --sidebar-primary: 217.2 91.2% 59.8%;
@@ -66,27 +59,25 @@
 
   body {
     @apply bg-background text-foreground antialiased;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Inter', system-ui, sans-serif;
   }
 }
 
 @layer utilities {
-  /* Gradient Text */
   .gradient-text {
     @apply bg-clip-text text-transparent;
-    background-image: var(--gradient-primary);
+    background-image: linear-gradient(135deg, hsl(217.2 91.2% 59.8%), hsl(270 95.2% 64.9%));
   }
 
-  /* Glass Morphism */
   .glass-card {
-    @apply backdrop-blur-xl border border-border/50;
-    background: var(--gradient-card);
+    @apply backdrop-blur-xl border border-border/50 rounded-xl;
+    background: linear-gradient(145deg, hsl(222.2 47.4% 16% / 0.8), hsl(222.2 47.4% 12% / 0.6));
   }
 
-  /* Gradient Border */
   .gradient-border {
     position: relative;
     background: hsl(var(--card));
+    border-radius: var(--radius);
   }
   
   .gradient-border::before {
@@ -95,83 +86,82 @@
     inset: 0;
     border-radius: inherit;
     padding: 1px;
-    background: var(--gradient-primary);
-    -webkit-mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
-    mask: 
-      linear-gradient(#fff 0 0) content-box, 
-      linear-gradient(#fff 0 0);
+    background: linear-gradient(135deg, hsl(217.2 91.2% 59.8%), hsl(270 95.2% 64.9%));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
     -webkit-mask-composite: xor;
     mask-composite: exclude;
     pointer-events: none;
   }
 
-  /* Glow Effects */
   .glow-primary {
-    box-shadow: var(--glow-primary);
+    box-shadow: 0 0 30px hsl(217.2 91.2% 59.8% / 0.4);
   }
 
   .glow-accent {
-    box-shadow: var(--glow-accent);
+    box-shadow: 0 0 30px hsl(270 95.2% 64.9% / 0.3);
   }
 
-  /* Hover Lift */
   .hover-lift {
     @apply transition-all duration-300;
   }
   
   .hover-lift:hover {
     @apply -translate-y-1;
-    box-shadow: 0 20px 40px hsl(217.2 91.2% 59.8% / 0.15);
+    box-shadow: 0 15px 30px hsl(217.2 91.2% 59.8% / 0.2);
   }
 
-  /* Animated Background Gradient */
-  .animated-gradient {
-    background: linear-gradient(
-      45deg,
-      hsl(222.2 47.4% 11.2%),
-      hsl(222.2 47.4% 15%),
-      hsl(217.2 91.2% 20%),
-      hsl(270 50% 15%),
-      hsl(222.2 47.4% 11.2%)
-    );
-    background-size: 400% 400%;
-    animation: gradient-shift 15s ease infinite;
+  .gradient-bg {
+    background: linear-gradient(180deg, hsl(222.2 47.4% 11.2%), hsl(222.2 47.4% 8%));
   }
 
-  @keyframes gradient-shift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
+  .gradient-cta {
+    background: linear-gradient(135deg, hsl(217.2 91.2% 59.8%), hsl(270 95.2% 64.9%));
   }
 
-  /* Floating Animation */
   @keyframes float {
     0%, 100% { transform: translateY(0px); }
-    50% { transform: translateY(-10px); }
+    50% { transform: translateY(-8px); }
   }
 
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
 
-  /* Pulse Glow */
   @keyframes pulse-glow {
-    0%, 100% { 
-      box-shadow: 0 0 20px hsl(217.2 91.2% 59.8% / 0.3);
-    }
-    50% { 
-      box-shadow: 0 0 40px hsl(217.2 91.2% 59.8% / 0.5);
-    }
+    0%, 100% { box-shadow: 0 0 20px hsl(217.2 91.2% 59.8% / 0.3); }
+    50% { box-shadow: 0 0 35px hsl(217.2 91.2% 59.8% / 0.5); }
   }
 
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
 
-  /* Step Number Gradient */
-  .step-number {
-    @apply bg-clip-text text-transparent font-bold text-5xl;
-    background-image: var(--gradient-primary);
+  @keyframes confetti-fall {
+    0% { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(400px) rotate(720deg); opacity: 0; }
+  }
+
+  .animate-confetti {
+    animation: confetti-fall 2.5s ease-out forwards;
+  }
+
+  @keyframes check-scale {
+    0% { transform: scale(0); }
+    50% { transform: scale(1.2); }
+    100% { transform: scale(1); }
+  }
+
+  .animate-check {
+    animation: check-scale 0.5s ease-out forwards;
+  }
+
+  @keyframes progress-fill {
+    0% { width: 0%; }
+    100% { width: 100%; }
+  }
+
+  .animate-progress {
+    animation: progress-fill 8s ease-out forwards;
   }
 }
