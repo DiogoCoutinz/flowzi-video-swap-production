@@ -18,11 +18,17 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
+    // Force single React instance - fixes forwardRef errors
+    dedupe: ["react", "react-dom"],
   },
   build: {
     target: "esnext",
     minify: "esbuild",
     cssMinify: true,
+    commonjsOptions: {
+      include: [/node_modules/],
+      transformMixedEsModules: true,
+    },
     rollupOptions: {
       output: {
         assetFileNames: (assetInfo) => {
@@ -44,6 +50,6 @@ export default defineConfig(({ mode }) => ({
     sourcemap: mode === "development",
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom", "framer-motion"],
+    include: ["react", "react-dom", "react-router-dom", "framer-motion", "@stripe/stripe-js", "@stripe/react-stripe-js"],
   },
 }));
