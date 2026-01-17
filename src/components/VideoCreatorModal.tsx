@@ -697,18 +697,18 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                   </motion.div>
                 )}
 
-                {/* Success - Video Being Generated */}
+                {/* Success - Thank You Page */}
                 {currentStep === "success" && (
                   <motion.div
                     key="success"
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.5 }}
-                    className="text-center py-6 relative"
+                    className="relative"
                   >
                     {/* Confetti */}
                     <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                      {[...Array(20)].map((_, i) => (
+                      {[...Array(30)].map((_, i) => (
                         <div
                           key={i}
                           className="absolute w-2 h-2 rounded-full animate-confetti"
@@ -716,67 +716,126 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                             left: `${Math.random() * 100}%`,
                             top: `-5%`,
                             backgroundColor: i % 3 === 0 ? '#2563eb' : i % 3 === 1 ? '#a855f7' : '#22c55e',
-                            animationDelay: `${Math.random() * 0.8}s`,
+                            animationDelay: `${Math.random() * 1.2}s`,
                           }}
                         />
                       ))}
                     </div>
 
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
-                      className="w-16 h-16 rounded-full bg-green-500/20 flex items-center justify-center mx-auto mb-4"
-                    >
-                      <Check className="w-8 h-8 text-green-500" />
-                    </motion.div>
+                    {/* Main Content */}
+                    <div className="text-center py-8">
+                      <motion.div
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
+                        className="w-20 h-20 rounded-full bg-gradient-to-br from-green-500/30 to-green-600/30 flex items-center justify-center mx-auto mb-6 border border-green-500/30"
+                      >
+                        <Check className="w-10 h-10 text-green-400" />
+                      </motion.div>
 
-                    <h3 className="text-xl font-bold mb-2">Pagamento Confirmado! 🎉</h3>
-                    <p className="text-muted-foreground mb-6">
-                      O teu vídeo está a ser gerado pela nossa IA
-                    </p>
+                      <h2 className="text-2xl md:text-3xl font-black mb-3">Obrigado pela Compra! 🎉</h2>
+                      <p className="text-lg text-muted-foreground mb-8 max-w-md mx-auto">
+                        O teu vídeo personalizado está a ser criado pela nossa IA de última geração.
+                      </p>
 
-                    {/* Info Cards */}
-                    <div className="space-y-3 mb-6">
-                      <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-lg text-left">
-                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0">
-                          <Clock className="w-5 h-5 text-primary" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">Tempo estimado</p>
-                          <p className="text-xs text-muted-foreground">8-12 minutos</p>
-                        </div>
+                      {/* Info Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8 max-w-lg mx-auto">
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.3 }}
+                          className="flex items-center gap-4 p-5 bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl border border-primary/20 text-left"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                            <Clock className="w-6 h-6 text-primary" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground">8-12 minutos</p>
+                            <p className="text-sm text-muted-foreground">Tempo estimado</p>
+                          </div>
+                        </motion.div>
+
+                        <motion.div 
+                          initial={{ opacity: 0, y: 20 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.4 }}
+                          className="flex items-center gap-4 p-5 bg-gradient-to-br from-accent/10 to-accent/5 rounded-2xl border border-accent/20 text-left"
+                        >
+                          <div className="w-12 h-12 rounded-xl bg-accent/20 flex items-center justify-center flex-shrink-0">
+                            <Mail className="w-6 h-6 text-accent" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-foreground truncate max-w-[140px]">{email}</p>
+                            <p className="text-sm text-muted-foreground">Recebes por email</p>
+                          </div>
+                        </motion.div>
                       </div>
 
-                      <div className="flex items-center gap-3 p-4 bg-secondary/50 rounded-lg text-left">
-                        <div className="w-10 h-10 rounded-full bg-accent/20 flex items-center justify-center flex-shrink-0">
-                          <Mail className="w-5 h-5 text-accent" />
+                      <motion.p 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ delay: 0.5 }}
+                        className="text-sm text-muted-foreground mb-8 p-4 bg-secondary/30 rounded-xl border border-white/5"
+                      >
+                        💡 <strong>Dica:</strong> Verifica a tua caixa de entrada e a pasta de spam. O email chegará assim que o vídeo estiver pronto!
+                      </motion.p>
+
+                      {/* Example Videos Preview */}
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="mb-8"
+                      >
+                        <p className="text-sm font-semibold text-muted-foreground mb-4 uppercase tracking-wider">
+                          Enquanto esperas, vê alguns exemplos
+                        </p>
+                        <div className="flex justify-center gap-3">
+                          {["/cotrim.mp4", "/almirante.mp4", "/InfluencerFinal.mov"].map((src, i) => (
+                            <motion.div 
+                              key={src}
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              transition={{ delay: 0.7 + i * 0.1 }}
+                              className="w-16 h-24 md:w-20 md:h-32 rounded-xl overflow-hidden border border-white/10 shadow-lg"
+                            >
+                              <video 
+                                src={src} 
+                                className="w-full h-full object-cover" 
+                                autoPlay 
+                                loop 
+                                muted 
+                                playsInline 
+                              />
+                            </motion.div>
+                          ))}
                         </div>
-                        <div>
-                          <p className="font-medium text-sm">Recebes por email</p>
-                          <p className="text-xs text-muted-foreground">{email}</p>
-                        </div>
+                      </motion.div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-col gap-3">
+                        <motion.button
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          transition={{ delay: 0.8 }}
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={resetForm}
+                          className="inline-flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-4 rounded-xl font-bold text-lg transition-all shadow-lg"
+                        >
+                          <RefreshCw className="w-5 h-5" />
+                          Criar Outro Vídeo
+                        </motion.button>
+                        <motion.button
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          transition={{ delay: 0.9 }}
+                          onClick={resetAndClose}
+                          className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground px-6 py-3 rounded-xl font-medium transition-all"
+                        >
+                          Voltar à Página Inicial
+                        </motion.button>
                       </div>
-                    </div>
-
-                    <p className="text-sm text-muted-foreground mb-6">
-                      Verifica a tua caixa de entrada (e spam) dentro de alguns minutos.
-                    </p>
-
-                    <div className="flex flex-col gap-3">
-                      <button
-                        onClick={resetForm}
-                        className="inline-flex items-center justify-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground px-6 py-3 rounded-lg font-medium transition-all"
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                        Criar Outro Vídeo
-                      </button>
-                      <button
-                        onClick={resetAndClose}
-                        className="inline-flex items-center justify-center gap-2 text-muted-foreground hover:text-foreground px-6 py-2 rounded-lg font-medium transition-all text-sm"
-                      >
-                        Fechar
-                      </button>
                     </div>
                   </motion.div>
                 )}

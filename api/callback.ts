@@ -11,6 +11,13 @@ interface KieAiResult {
   resultUrls?: string[];
 }
 
+// Helper for structured logging
+function log(level: "INFO" | "ERROR" | "WARN", message: string, data?: Record<string, unknown>) {
+  const timestamp = new Date().toISOString();
+  const logData = { timestamp, level, message, ...data };
+  console.log(JSON.stringify(logData));
+}
+
 function generateSuccessEmailHtml(userName: string, videoUrl: string): string {
   const year = new Date().getFullYear();
   return `
@@ -81,11 +88,13 @@ async function sendEmail(
   const RESEND_API_KEY = process.env.RESEND_API_KEY;
 
   if (!RESEND_API_KEY) {
-    console.error("RESEND_API_KEY not configured");
+    log("ERROR", "RESEND_API_KEY not configured");
     return false;
   }
 
   try {
+    log("INFO", "Sending email via Resend", { to, subject });
+    
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: {
@@ -101,15 +110,20 @@ async function sendEmail(
       }),
     });
 
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      console.error("Resend error:", await response.text());
+      log("ERROR", "Resend API error", { to, status: response.status, response: responseText });
       return false;
     }
 
-    console.log(`Email sent to ${to}`);
+    log("INFO", "✅ Email sent successfully", { to, subject, response: responseText });
     return true;
   } catch (error) {
-    console.error("Send email error:", error);
+    log("ERROR", "Send email exception", { 
+      to, 
+      error: error instanceof Error ? error.message : String(error) 
+    });
     return false;
   }
 }
@@ -118,8 +132,18 @@ export default async function handler(
   req: VercelRequest,
   res: VercelResponse
 ) {
+  const callbackId = Math.random().toString(36).substring(7);
+  
+  log("INFO", "🔔 Callback received from Kie.ai", { 
+    callbackId, 
+    method: req.method,
+    query: req.query,
+    bodyKeys: Object.keys(req.body || {})
+  });
+
   // Only allow POST
   if (req.method !== "POST") {
+    log("WARN", "Method not allowed", { callbackId, method: req.method });
     return res.status(405).json({ error: "Método não permitido" });
   }
 
@@ -129,45 +153,81 @@ export default async function handler(
     const userName = req.query.userName as string;
 
     if (!email || !userName) {
-      console.error("Missing email or userName in callback URL");
+      log("ERROR", "Missing email or userName in callback URL", { callbackId, query: req.query });
       return res.status(200).json({ received: true, error: "Missing user data" });
     }
 
     const callback = req.body as KieAiCallback;
     const { taskId, state, resultJson, errorMsg } = callback;
 
-    console.log(`Callback received for task ${taskId}: ${state} (user: ${email})`);
+    log("INFO", "📋 Callback data parsed", { 
+      callbackId,
+      taskId, 
+      state, 
+      email, 
+      userName,
+      hasResultJson: !!resultJson,
+      errorMsg: errorMsg || null
+    });
 
     if (!taskId) {
+      log("ERROR", "Missing taskId in callback", { callbackId });
       return res.status(400).json({ error: "taskId em falta" });
     }
 
     if (state === "success" && resultJson) {
+      log("INFO", "✅ Task completed successfully, parsing result", { callbackId, taskId });
+      
       try {
         const result = JSON.parse(resultJson) as KieAiResult;
         const videoUrl = result.resultUrls?.[0];
 
+        log("INFO", "Video URL extracted", { callbackId, taskId, videoUrl: videoUrl || "NOT_FOUND", allUrls: result.resultUrls });
+
         if (videoUrl) {
           // Send success email
           const html = generateSuccessEmailHtml(userName, videoUrl);
-          await sendEmail(email, "O teu vídeo Flowzi está pronto! 🎉", html);
-          console.log(`Video ready for ${email}: ${videoUrl}`);
+          const emailSent = await sendEmail(email, "O teu vídeo Flowzi está pronto! 🎉", html);
+          
+          log("INFO", "📧 Success email sent", { 
+            callbackId, 
+            taskId, 
+            email, 
+            emailSent,
+            videoUrl 
+          });
+        } else {
+          log("ERROR", "No video URL in result", { callbackId, taskId, result });
         }
       } catch (parseError) {
-        console.error("Error parsing resultJson:", parseError);
+        log("ERROR", "Error parsing resultJson", { 
+          callbackId, 
+          taskId, 
+          error: parseError instanceof Error ? parseError.message : String(parseError),
+          resultJson: resultJson?.substring(0, 500)
+        });
       }
     } else if (state === "fail") {
-      console.error(`Task ${taskId} failed: ${errorMsg}`);
+      log("ERROR", "❌ Task failed", { callbackId, taskId, errorMsg });
       
       // Send failure email
       const html = generateFailureEmailHtml(userName);
-      await sendEmail(email, "Problema com o teu vídeo Flowzi", html);
+      const emailSent = await sendEmail(email, "Problema com o teu vídeo Flowzi", html);
+      
+      log("INFO", "📧 Failure email sent", { callbackId, taskId, email, emailSent });
+    } else if (state === "pending" || state === "processing") {
+      log("INFO", "⏳ Task still in progress", { callbackId, taskId, state });
     }
 
     // Always return 200 to acknowledge receipt
-    return res.status(200).json({ received: true });
+    log("INFO", "Callback processed successfully", { callbackId, taskId, state });
+    return res.status(200).json({ received: true, state });
   } catch (error) {
-    console.error("Callback error:", error);
+    log("ERROR", "Callback handler error", { 
+      callbackId, 
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined
+    });
     // Still return 200 to prevent retries
     return res.status(200).json({ received: true, error: "Internal error" });
   }
