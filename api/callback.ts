@@ -93,7 +93,7 @@ async function sendEmail(
         Authorization: `Bearer ${RESEND_API_KEY}`,
       },
       body: JSON.stringify({
-        from: "Flowzi <noreply@flowzi.pt>",
+        from: "Flowzi <geral@flowzi.pt>",
         to: [to],
         subject,
         html,
