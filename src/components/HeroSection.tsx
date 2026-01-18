@@ -1,6 +1,7 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, ArrowRight, Play, Clock, Shield, Check, Star } from "lucide-react";
 import { useRef, useEffect } from "react";
+import { trackEvent } from "@/lib/analytics";
 
 interface HeroSectionProps {
   onOpenModal: () => void;
@@ -10,6 +11,16 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const videoLeftRef = useRef<HTMLVideoElement>(null);
   const videoRightRef = useRef<HTMLVideoElement>(null);
+
+  const handleOpenModal = () => {
+    trackEvent('open_modal_hero');
+    onOpenModal();
+  };
+
+  const handleViewExamples = () => {
+    trackEvent('view_examples_hero');
+    document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' });
+  };
   
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -110,7 +121,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={onOpenModal}
+                onClick={handleOpenModal}
                 className="group relative inline-flex items-center justify-center gap-3 bg-primary hover:bg-primary/90 text-primary-foreground px-10 py-5 rounded-2xl font-black text-xl transition-all shadow-[0_0_40px_-10px_rgba(37,99,235,0.5)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
@@ -120,7 +131,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
               </motion.button>
 
               <button
-                onClick={() => document.getElementById('exemplos')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={handleViewExamples}
                 className="inline-flex items-center justify-center gap-3 bg-white/5 hover:bg-white/10 text-foreground px-10 py-5 rounded-2xl font-bold text-xl transition-all border border-white/10 backdrop-blur-sm"
               >
                 <Play className="w-5 h-5 fill-current" />

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, uploadFile, convertVideo } from "@/lib/api";
+import { trackEvent } from "@/lib/analytics";
 
 // Lazy load Stripe React components
 const StripeCheckout = lazy(() => import("./StripeCheckout"));
@@ -139,6 +140,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     
     setIsProcessing(true);
     setApiError(null);
+    trackEvent('begin_checkout', { email });
 
     try {
       console.log("[Flowzi] Starting upload process...");
@@ -148,6 +150,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         uploadFile(videoFile),
       ]);
 
+      trackEvent('files_uploaded');
       console.log("[Flowzi] Upload complete:", { photoUrl, videoUrl });
 
       const pendingData = { photoUrl, videoUrl, email, userName: name };
@@ -205,6 +208,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       if (!paymentResult.success) {
         throw new Error("Pagamento não confirmado");
       }
+
+      trackEvent('payment_confirmed');
 
       // 2. Get data from localStorage
       const pendingJobStr = localStorage.getItem('flowzi_pending_job');
@@ -270,6 +275,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       if (n8nResponse.ok) {
         localStorage.removeItem('flowzi_pending_job');
         console.log("[Flowzi] Success! Cleared localStorage and showing success page.");
+        trackEvent('video_generation_queued', { email: savedEmail });
         setEmail(savedEmail);
         setCurrentStep("success");
       } else {
