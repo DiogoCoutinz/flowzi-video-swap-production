@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
-import { createCheckoutSession, verifyCheckout, uploadFile, convertVideo } from "@/lib/api";
+import { createCheckoutSession, verifyCheckout, uploadFile } from "@/lib/api";
 import { trackEvent, identifyUser } from "@/lib/analytics";
 
 // Lazy load Stripe React components
@@ -211,89 +211,21 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       setCurrentStep("processing");
       console.log("[Flowzi] Processing checkout for session:", sessionId);
 
-      // 1. Verify payment
-      console.log("[Flowzi] Verifying payment...");
+      // 1. Verify payment AND trigger backend processing
+      console.log("[Flowzi] Triggering backend verification and n8n...");
       const paymentResult = await verifyCheckout(sessionId);
-      console.log("[Flowzi] Payment verification result:", paymentResult);
+      console.log("[Flowzi] Backend verification result:", paymentResult);
       
       if (!paymentResult.success) {
         throw new Error("Pagamento não confirmado");
       }
 
+      localStorage.removeItem('flowzi_pending_job');
+      console.log("[Flowzi] Success! Cleared localStorage and showing success page.");
       trackEvent('payment_confirmed');
-
-      // 2. Get data from localStorage
-      const pendingJobStr = localStorage.getItem('flowzi_pending_job');
-      console.log("[Flowzi] Retrieved from localStorage:", pendingJobStr);
-      
-      let finalJobData;
-      
-      if (pendingJobStr) {
-        finalJobData = JSON.parse(pendingJobStr);
-      } else if (paymentResult.photoUrl && paymentResult.videoUrl) {
-        // Fallback: use data from Stripe metadata if localStorage is empty
-        console.log("[Flowzi] Using fallback data from Stripe metadata");
-        finalJobData = {
-          photoUrl: paymentResult.photoUrl,
-          videoUrl: paymentResult.videoUrl,
-          email: paymentResult.email,
-          userName: paymentResult.userName
-        };
-      }
-
-      if (!finalJobData) {
-        // Fallback: Payment confirmed but no data at all
-        console.error("[Flowzi] No pending job data found anywhere");
-        setEmail(paymentResult.email || "");
-        setApiError("Pagamento confirmado! Mas houve um problema técnico ao recuperar os teus ficheiros. Contacta flowzi.geral@gmail.com.");
-        setCurrentStep("error");
-        return;
-      }
-      
-      let { photoUrl, videoUrl, email: savedEmail, userName } = finalJobData;
-      const blobVideoUrl = videoUrl; // Guardamos o link original do Vercel Blob para apagar depois
-      
-      console.log("[Flowzi] Parsed pending job:", { photoUrl: photoUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50), savedEmail, userName });
-
-      // 2.5 Auto-convert MOV to MP4 via Cloudinary if needed
-      if (videoUrl.toLowerCase().includes('.mov')) {
-        console.log("[Flowzi] MOV detected, converting via Cloudinary...");
-        const convertedUrl = await convertVideo(videoUrl);
-        console.log("[Flowzi] Conversion complete:", convertedUrl);
-        videoUrl = convertedUrl;
-      }
-
-      // 3. Send data to n8n Webhook (Production URL)
-      console.log("[Flowzi] Sending to n8n webhook...");
-      const n8nResponse = await fetch("https://n8n.diogocoutinho.cloud/webhook/videosaas", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          photoUrl,
-          videoUrl,      // Link para a IA (MP4 do Cloudinary ou original)
-          blobVideoUrl,  // Link para apagar (Sempre o Vercel Blob)
-          email: savedEmail,
-          userName,
-          sessionId,
-          timestamp: new Date().toISOString(),
-        }),
-      });
-      
-      console.log("[Flowzi] n8n response status:", n8nResponse.status);
-      
-      if (n8nResponse.ok) {
-        localStorage.removeItem('flowzi_pending_job');
-        console.log("[Flowzi] Success! Cleared localStorage and showing success page.");
-        trackEvent('video_generation_queued', { email: savedEmail });
-        setEmail(savedEmail);
-        setCurrentStep("success");
-      } else {
-        const errorText = await n8nResponse.text();
-        console.error("[Flowzi] n8n error response:", errorText);
-        throw new Error("Erro ao enviar para processamento");
-      }
+      trackEvent('video_generation_queued', { email: paymentResult.email });
+      setEmail(paymentResult.email || "");
+      setCurrentStep("success");
     } catch (error) {
       console.error("[Flowzi] Checkout complete error:", error);
       setApiError(error instanceof Error ? error.message : "Erro ao finalizar. Contacta o suporte.");

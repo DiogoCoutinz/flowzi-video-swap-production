@@ -15,10 +15,16 @@ interface GenerateVideoRequest {
   userName: string;
 }
 
-// Helper for structured logging
+// Helper for structured logging with PII masking
 function log(level: "INFO" | "ERROR" | "WARN", message: string, data?: Record<string, unknown>) {
   const timestamp = new Date().toISOString();
-  const logData = { timestamp, level, message, ...data };
+  
+  // Create a safe copy of data for logging
+  const safeData = data ? { ...data } : {};
+  if (safeData.email) safeData.email = (safeData.email as string).replace(/(.{2})(.*)(?=@)/, "$1***");
+  if (safeData.userName) safeData.userName = (safeData.userName as string).substring(0, 2) + "***";
+  
+  const logData = { timestamp, level, message, ...safeData };
   console.log(JSON.stringify(logData));
 }
 
