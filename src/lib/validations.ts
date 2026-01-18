@@ -59,6 +59,12 @@ export const validateVideoDuration = (
   duration: number,
   maxDuration: number = 12
 ): { valid: boolean; error?: string } => {
+  if (duration < 3) {
+    return { 
+      valid: false, 
+      error: "O vídeo deve ter pelo menos 3 segundos" 
+    };
+  }
   if (duration > maxDuration) {
     return { 
       valid: false, 

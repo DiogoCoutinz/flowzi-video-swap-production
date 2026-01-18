@@ -532,7 +532,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       </div>
                       <div>
                         <h3 className="text-lg font-semibold">Onde queres aparecer?</h3>
-                        <p className="text-sm text-muted-foreground">Carrega o vídeo (máx 12 segundos)</p>
+                        <p className="text-sm text-muted-foreground">Carrega o vídeo (3 a 12 segundos)</p>
                       </div>
                     </div>
 
@@ -603,7 +603,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
 
                     <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5">
                       <p className="text-xs text-muted-foreground">
-                        <strong className="text-foreground/80">Requisitos:</strong> Máximo 12 segundos • Resolução mínima 720x720 • Qualquer orientação • Movimento visível do corpo
+                        <strong className="text-foreground/80">Requisitos:</strong> 3 a 12 segundos • Resolução mínima 720x720 • Qualquer orientação • Movimento visível do corpo
                       </p>
                     </div>
 
