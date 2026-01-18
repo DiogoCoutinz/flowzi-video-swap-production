@@ -40,8 +40,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       folder: 'flowzi_conversions',
       format: 'mp4',
       video_codec: 'h264',
-      bit_rate: '2m',
-      quality: 'auto'
+      quality: 'auto:best',
+      transformation: [
+        // Esta transformação garante que se o vídeo for vertical (como 576x1024), 
+        // ele é redimensionado para ter pelo menos 720px de largura mantendo a proporção.
+        // O "if" do Cloudinary é potente: se a largura for menor que 720, escala para 720.
+        { if: "w_lt_720", width: 720, crop: "scale" },
+        // Se após isso a altura ainda for menor que 720 (vídeos muito largos), escala a altura.
+        { if: "h_lt_720", height: 720, crop: "scale" }
+      ]
     });
 
     return res.status(200).json({ 

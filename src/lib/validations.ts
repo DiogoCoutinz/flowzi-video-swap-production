@@ -85,11 +85,37 @@ export const getVideoDimensions = (file: File): Promise<{ width: number; height:
   return new Promise((resolve, reject) => {
     const video = document.createElement('video');
     video.preload = 'metadata';
-    video.onloadedmetadata = () => {
-      window.URL.revokeObjectURL(video.src);
-      resolve({ width: video.videoWidth, height: video.videoHeight });
+    video.muted = true;
+    video.playsInline = true;
+    
+    const timeout = setTimeout(() => {
+      cleanup();
+      reject(new Error("Timeout ao ler dimensões do vídeo"));
+    }, 5000);
+
+    const cleanup = () => {
+      clearTimeout(timeout);
+      video.onloadedmetadata = null;
+      video.onerror = null;
+      if (video.src) window.URL.revokeObjectURL(video.src);
     };
-    video.onerror = () => reject(new Error("Não foi possível ler as dimensões do vídeo"));
+
+    video.onloadedmetadata = () => {
+      const width = video.videoWidth;
+      const height = video.videoHeight;
+      cleanup();
+      if (width > 0 && height > 0) {
+        resolve({ width, height });
+      } else {
+        reject(new Error("Vídeo com dimensões inválidas (0x0)"));
+      }
+    };
+
+    video.onerror = () => {
+      cleanup();
+      reject(new Error("Não foi possível ler as dimensões do vídeo"));
+    };
+
     video.src = URL.createObjectURL(file);
   });
 };
