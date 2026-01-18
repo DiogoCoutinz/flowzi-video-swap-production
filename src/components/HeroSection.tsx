@@ -38,24 +38,10 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
     // Delay video loading to prioritize landing page content
     const timer = setTimeout(() => {
       setIsLoaded(true);
-    }, 1000);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, []);
-
-  useEffect(() => {
-    if (!isLoaded) return;
-
-    const playVideos = async () => {
-      try {
-        if (videoLeftRef.current) await videoLeftRef.current.play();
-        if (videoRightRef.current) await videoRightRef.current.play();
-      } catch (err) {
-        console.log("Autoplay blocked, waiting for interaction");
-      }
-    };
-    playVideos();
-  }, [isLoaded]);
 
   return (
     <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden">
@@ -81,7 +67,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
                   muted 
                   loop 
                   playsInline
-                  preload="auto"
+                  preload="none"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </motion.div>
@@ -97,7 +83,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
                   muted 
                   loop 
                   playsInline
-                  preload="auto"
+                  preload="none"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               </motion.div>
