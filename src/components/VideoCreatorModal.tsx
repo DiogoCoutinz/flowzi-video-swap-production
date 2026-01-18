@@ -235,13 +235,13 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       }
       
       let { photoUrl, videoUrl, email: savedEmail, userName } = finalJobData;
+      const blobVideoUrl = videoUrl; // Guardamos o link original do Vercel Blob para apagar depois
       
       console.log("[Flowzi] Parsed pending job:", { photoUrl: photoUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50), savedEmail, userName });
 
       // 2.5 Auto-convert MOV to MP4 via Cloudinary if needed
       if (videoUrl.toLowerCase().includes('.mov')) {
         console.log("[Flowzi] MOV detected, converting via Cloudinary...");
-        // Removido o try/catch de fallback para forçar a correção do erro
         const convertedUrl = await convertVideo(videoUrl);
         console.log("[Flowzi] Conversion complete:", convertedUrl);
         videoUrl = convertedUrl;
@@ -256,7 +256,8 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         },
         body: JSON.stringify({
           photoUrl,
-          videoUrl,
+          videoUrl,      // Link para a IA (MP4 do Cloudinary ou original)
+          blobVideoUrl,  // Link para apagar (Sempre o Vercel Blob)
           email: savedEmail,
           userName,
           sessionId,
