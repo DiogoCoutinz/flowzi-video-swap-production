@@ -34,3 +34,12 @@ export const trackEvent = (eventName: string, params?: Record<string, any>) => {
     console.log(`[Analytics] ${eventName}`, params);
   }
 };
+
+export const identifyUser = (email: string, name?: string) => {
+  if (typeof window !== 'undefined' && posthog) {
+    posthog.identify(email, {
+      email,
+      name,
+    });
+  }
+};

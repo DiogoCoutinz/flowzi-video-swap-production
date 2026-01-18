@@ -14,6 +14,13 @@ if (typeof window !== 'undefined' && posthogKey) {
     capture_pageview: true,
     persistence: 'localStorage',
     autocapture: true,
+    debug: import.meta.env.DEV,
+    session_recording: {
+      maskAllInputs: false,
+      maskInputOptions: {
+        password: true,
+      },
+    },
   });
 } else if (import.meta.env.DEV) {
   console.warn("PostHog key missing in .env");

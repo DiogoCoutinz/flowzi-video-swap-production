@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
 import { createCheckoutSession, verifyCheckout, uploadFile, convertVideo } from "@/lib/api";
-import { trackEvent } from "@/lib/analytics";
+import { trackEvent, identifyUser } from "@/lib/analytics";
 
 // Lazy load Stripe React components
 const StripeCheckout = lazy(() => import("./StripeCheckout"));
@@ -140,6 +140,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     
     setIsProcessing(true);
     setApiError(null);
+    identifyUser(email, name);
     trackEvent('begin_checkout', { email });
 
     try {
