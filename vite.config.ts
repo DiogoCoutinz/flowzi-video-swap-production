@@ -43,6 +43,12 @@ export default defineConfig(({ mode }) => ({
         },
         chunkFileNames: "assets/js/[name]-[hash].js",
         entryFileNames: "assets/js/[name]-[hash].js",
+        manualChunks: {
+          "vendor-react": ["react", "react-dom", "react-router-dom"],
+          "vendor-framer": ["framer-motion"],
+          "vendor-stripe": ["@stripe/stripe-js", "@stripe/react-stripe-js"],
+          "vendor-query": ["@tanstack/react-query"],
+        },
       },
     },
     reportCompressedSize: false,

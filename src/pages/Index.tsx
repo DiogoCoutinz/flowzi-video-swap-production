@@ -1,17 +1,21 @@
 import { useState, lazy, Suspense, useEffect } from "react";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
-import ExemplosSection from "@/components/ExemplosSection";
-import PrecosSection from "@/components/PrecosSection";
-import FAQSection from "@/components/FAQSection";
-import CTASection from "@/components/CTASection";
-import Footer from "@/components/Footer";
 import { motion, useSpring, useMotionValue } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
+const ExemplosSection = lazy(() => import("@/components/ExemplosSection"));
+const PrecosSection = lazy(() => import("@/components/PrecosSection"));
+const FAQSection = lazy(() => import("@/components/FAQSection"));
+const CTASection = lazy(() => import("@/components/CTASection"));
+const Footer = lazy(() => import("@/components/Footer"));
 const VideoCreatorModal = lazy(() => import("@/components/VideoCreatorModal"));
+
+const SectionSkeleton = () => <div className="min-h-[400px] w-full bg-background/50 animate-pulse" />;
 
 const Index = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const isMobile = useIsMobile();
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
 
@@ -28,6 +32,8 @@ const Index = () => {
   }, []);
 
   useEffect(() => {
+    if (isMobile) return;
+
     const handleMouseMove = (e: MouseEvent) => {
       mouseX.set(e.clientX);
       mouseY.set(e.clientY);
@@ -35,29 +41,41 @@ const Index = () => {
 
     window.addEventListener("mousemove", handleMouseMove);
     return () => window.removeEventListener("mousemove", handleMouseMove);
-  }, [mouseX, mouseY]);
+  }, [mouseX, mouseY, isMobile]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-x-hidden">
-      {/* Dynamic Cursor Glow */}
-      <motion.div
-        className="pointer-events-none fixed inset-0 z-30 opacity-30"
-        style={{
-          background: `radial-gradient(600px circle at ${springX}px ${springY}px, rgba(37, 99, 235, 0.15), transparent 80%)`,
-        }}
-      />
+      {/* Dynamic Cursor Glow - Only on Desktop */}
+      {!isMobile && (
+        <motion.div
+          className="pointer-events-none fixed inset-0 z-30 opacity-30"
+          style={{
+            background: `radial-gradient(600px circle at ${springX}px ${springY}px, rgba(37, 99, 235, 0.15), transparent 80%)`,
+          }}
+        />
+      )}
 
       <Header onOpenModal={() => setIsModalOpen(true)} />
       
       <main>
         <HeroSection onOpenModal={() => setIsModalOpen(true)} />
-        <ExemplosSection />
-        <PrecosSection onOpenModal={() => setIsModalOpen(true)} />
-        <FAQSection />
-        <CTASection onOpenModal={() => setIsModalOpen(true)} />
+        <Suspense fallback={<SectionSkeleton />}>
+          <ExemplosSection />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton />}>
+          <PrecosSection onOpenModal={() => setIsModalOpen(true)} />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton />}>
+          <FAQSection />
+        </Suspense>
+        <Suspense fallback={<SectionSkeleton />}>
+          <CTASection onOpenModal={() => setIsModalOpen(true)} />
+        </Suspense>
       </main>
 
-      <Footer />
+      <Suspense fallback={<div className="h-20" />}>
+        <Footer />
+      </Suspense>
       
       <Suspense fallback={null}>
         {isModalOpen && (

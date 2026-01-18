@@ -89,7 +89,7 @@ const VideoCard = ({ example, index }: { example: typeof examples[0]; index: num
             muted={isMuted}
             onPlay={() => setIsPlaying(true)}
             onPause={() => setIsPlaying(false)}
-            preload="auto"
+            preload="metadata"
           />
 
           {/* Overlay Gradient */}

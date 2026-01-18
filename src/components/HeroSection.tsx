@@ -66,7 +66,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
               muted 
               loop 
               playsInline
-              preload="auto"
+              preload="metadata"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </motion.div>
@@ -82,7 +82,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
               muted 
               loop 
               playsInline
-              preload="auto"
+              preload="none"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
           </motion.div>
