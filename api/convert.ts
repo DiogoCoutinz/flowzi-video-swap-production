@@ -23,6 +23,22 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'videoUrl is required' });
     }
 
+    // Check if Cloudinary is configured
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+    const apiKey = process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+    if (!cloudName || !apiKey || !apiSecret) {
+      console.error('[Flowzi] Cloudinary not configured. Missing env vars:', {
+        hasCloudName: !!cloudName,
+        hasApiKey: !!apiKey,
+        hasApiSecret: !!apiSecret,
+      });
+      return res.status(500).json({ 
+        error: 'Cloudinary não está configurado. Adiciona as variáveis de ambiente na Vercel.' 
+      });
+    }
+
     console.log("[Flowzi] Converting MOV to MP4 via Cloudinary:", videoUrl);
 
     // Upload from URL and force H.264 MP4 conversion
@@ -42,7 +58,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
   } catch (error) {
-    console.error('[Flowzi] Conversion error:', error);
+    console.error('[Flowzi] Conversion error:', {
+      error: (error as Error).message,
+      stack: (error as Error).stack,
+      fullError: error
+    });
     return res.status(500).json({ 
       error: 'Failed to convert video', 
       details: (error as Error).message 
