@@ -5,7 +5,7 @@ import posthog from 'posthog-js';
 
 // Initialize PostHog
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
-const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://us.i.posthog.com';
 
 if (typeof window !== 'undefined' && posthogKey) {
   posthog.init(posthogKey, {
