@@ -11,6 +11,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const authHeader = req.headers.authorization;
     const DELETE_TOKEN = process.env.DELETE_TOKEN;
 
+    // Só bloqueia se o token estiver configurado na Vercel
     if (DELETE_TOKEN && authHeader !== `Bearer ${DELETE_TOKEN}`) {
       return res.status(401).json({ error: 'Unauthorized' });
     }
