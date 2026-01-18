@@ -12,11 +12,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   const { videoUrl } = req.body;
 
-  // 1. Configuração do Cloudinary
+  // Configuração com .trim() para evitar erros de espaços ao copiar/colar
+  const cloud_name = process.env.CLOUDINARY_CLOUD_NAME?.trim();
+  const api_key = process.env.CLOUDINARY_API_KEY?.trim();
+  const api_secret = process.env.CLOUDINARY_API_SECRET?.trim();
+
   cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
+    cloud_name,
+    api_key,
+    api_secret,
     secure: true
   });
 
@@ -25,25 +29,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'URL do vídeo em falta' });
     }
 
-    console.log("[Flowzi] Cloudinary Config:", {
-      cloud: process.env.CLOUDINARY_CLOUD_NAME,
-      key: process.env.CLOUDINARY_API_KEY ? "CONFIGURADA ✅" : "FALTA ❌",
-      secret: process.env.CLOUDINARY_API_SECRET ? "CONFIGURADA ✅" : "FALTA ❌"
-    });
+    if (!cloud_name || !api_key || !api_secret) {
+      return res.status(500).json({ error: 'Configuração do Cloudinary incompleta na Vercel' });
+    }
 
-    console.log("[Flowzi] A tentar converter vídeo de:", videoUrl);
+    console.log("[Flowzi] A converter via Cloudinary:", { cloud_name, videoUrl });
 
-    // 2. Upload para Cloudinary com conversão forçada para MP4 H.264
     const result = await cloudinary.uploader.upload(videoUrl, {
       resource_type: 'video',
       folder: 'flowzi_conversions',
       format: 'mp4',
-      video_codec: 'h264', // Codec que o Kie.ai exige
+      video_codec: 'h264',
       bit_rate: '2m',
       quality: 'auto'
     });
-
-    console.log("[Flowzi] Conversão OK:", result.secure_url);
 
     return res.status(200).json({ 
       success: true, 
@@ -51,12 +50,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
 
   } catch (error: any) {
-    console.error('[Flowzi] Erro no Cloudinary:', error);
-    
-    // Devolvemos o erro detalhado para o frontend nos mostrar no console
+    console.error('[Flowzi] Erro Cloudinary:', error);
     return res.status(500).json({ 
-      error: 'Falha na conversão Cloudinary', 
-      details: error.message || 'Erro desconhecido',
+      error: 'Falha na conversão', 
+      details: error.message,
       cloudinary_error: error
     });
   }

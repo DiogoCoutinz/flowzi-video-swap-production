@@ -241,14 +241,10 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
       // 2.5 Auto-convert MOV to MP4 via Cloudinary if needed
       if (videoUrl.toLowerCase().includes('.mov')) {
         console.log("[Flowzi] MOV detected, converting via Cloudinary...");
-        try {
-          const convertedUrl = await convertVideo(videoUrl);
-          console.log("[Flowzi] Conversion complete:", convertedUrl);
-          videoUrl = convertedUrl;
-        } catch (convError) {
-          console.error("[Flowzi] Conversion failed, trying with original URL:", convError);
-          // Continue with original URL as fallback, maybe Kie.ai accepts it now
-        }
+        // Removido o try/catch de fallback para forçar a correção do erro
+        const convertedUrl = await convertVideo(videoUrl);
+        console.log("[Flowzi] Conversion complete:", convertedUrl);
+        videoUrl = convertedUrl;
       }
 
       // 3. Send data to n8n Webhook (Production URL)
