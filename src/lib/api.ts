@@ -170,7 +170,10 @@ export async function convertVideo(videoUrl: string): Promise<string> {
   });
 
   const result = await response.json();
-  if (!response.ok) throw new Error(result.error || 'Erro na conversão do vídeo');
+  if (!response.ok) {
+    console.error("[Flowzi] Erro detalhado da conversão:", result);
+    throw new Error(result.details || result.error || 'Erro na conversão do vídeo');
+  }
   return result.url;
 }
 
