@@ -14,7 +14,11 @@ declare global {
 
 export const trackEvent = (eventName: string, params?: Record<string, any>) => {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, params);
+    const gaId = import.meta.env.VITE_GA_ID;
+    window.gtag('event', eventName, {
+      ...params,
+      send_to: gaId
+    });
   } else {
     console.warn(`GA tag not found. Event ${eventName} not tracked.`, params);
   }
