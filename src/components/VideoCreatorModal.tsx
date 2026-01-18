@@ -145,6 +145,16 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
     try {
       console.log("[Flowzi] Starting upload process...");
       
+      // Extra validation before proceeding
+      const revalidation = await validateVideo(videoFile, 12);
+      if (!revalidation.valid) {
+        setVideoError(revalidation.error || "Vídeo inválido");
+        setApiError("Por favor, carrega um vídeo com resolução mínima de 720x720");
+        setIsProcessing(false);
+        setCurrentStep("video");
+        return;
+      }
+      
       const [photoUrl, videoUrl] = await Promise.all([
         uploadFile(imageFile),
         uploadFile(videoFile),
@@ -577,7 +587,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                             </div>
                             <div>
                               <p className="font-medium text-sm">Arrasta ou clica para escolher</p>
-                              <p className="text-xs text-muted-foreground mt-1">MP4 ou MOV • Máx 100MB</p>
+                              <p className="text-xs text-muted-foreground mt-1">MP4 ou MOV • Máx 100MB • Min 720x720</p>
                             </div>
                           </div>
                         </label>
@@ -593,7 +603,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
 
                     <div className="mt-4 p-4 bg-secondary/30 rounded-xl border border-white/5">
                       <p className="text-xs text-muted-foreground">
-                        <strong className="text-foreground/80">Requisitos:</strong> Máximo 12 segundos • Qualquer orientação • Movimento visível do corpo
+                        <strong className="text-foreground/80">Requisitos:</strong> Máximo 12 segundos • Resolução mínima 720x720 • Qualquer orientação • Movimento visível do corpo
                       </p>
                     </div>
 
@@ -607,7 +617,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                       </button>
                       <button
                         onClick={() => setCurrentStep("checkout")}
-                        disabled={!uploadedVideo}
+                        disabled={!uploadedVideo || !!videoError}
                         className="flex items-center gap-2 bg-primary hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed text-primary-foreground px-8 py-3.5 rounded-xl font-semibold transition-all shadow-lg hover:shadow-primary/25"
                       >
                         Continuar

@@ -146,15 +146,16 @@ export const validateVideo = async (
     const durationValidation = validateVideoDuration(duration, maxDuration);
     if (!durationValidation.valid) return durationValidation;
 
+    // Both dimensions must be at least 720
     if (dimensions.width < 720 || dimensions.height < 720) {
       return { 
         valid: false, 
-        error: "A resolução do vídeo deve ser de pelo menos 720x720" 
+        error: `Resolução muito baixa (${dimensions.width}x${dimensions.height}). Mínimo: 720x720` 
       };
     }
 
     return { valid: true };
-  } catch {
+  } catch (error) {
     return { valid: false, error: "Não foi possível ler o vídeo" };
   }
 };
