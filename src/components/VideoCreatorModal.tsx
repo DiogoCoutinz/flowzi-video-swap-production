@@ -843,6 +843,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                                 playsInline
                                 loop
                                 autoPlay
+                                preload="none"
                               />
                               <div className="absolute bottom-1 left-0 right-0 text-[10px] text-white/50 font-medium">
                                 {item.label}

@@ -1,6 +1,6 @@
 import { motion, useScroll, useTransform } from "framer-motion";
 import { Sparkles, ArrowRight, Play, Clock, Shield, Check, Star } from "lucide-react";
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { trackEvent } from "@/lib/analytics";
 
 interface HeroSectionProps {
@@ -32,7 +32,20 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
   const rotateLeft = useTransform(scrollYProgress, [0, 1], [-6, -12]);
   const rotateRight = useTransform(scrollYProgress, [0, 1], [6, 12]);
 
+  const [isLoaded, setIsLoaded] = useState(false);
+
   useEffect(() => {
+    // Delay video loading to prioritize landing page content
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!isLoaded) return;
+
     const playVideos = async () => {
       try {
         if (videoLeftRef.current) await videoLeftRef.current.play();
@@ -42,7 +55,7 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
       }
     };
     playVideos();
-  }, []);
+  }, [isLoaded]);
 
   return (
     <section ref={containerRef} className="relative min-h-[90vh] flex items-center justify-center pt-32 pb-20 overflow-hidden">
@@ -55,37 +68,41 @@ const HeroSection = ({ onOpenModal }: HeroSectionProps) => {
       <div className="container mx-auto px-6 relative z-10">
         <div className="max-w-5xl mx-auto text-center">
           {/* Floating Videos */}
-          <motion.div 
-            style={{ y: yLeft, rotate: rotateLeft }}
-            className="absolute -left-4 md:-left-20 top-20 w-32 md:w-64 aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl hidden lg:block opacity-70"
-          >
-            <video 
-              ref={videoLeftRef}
-              src="/cotrim.mp4" 
-              className="w-full h-full object-cover" 
-              muted 
-              loop 
-              playsInline
-              preload="metadata"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </motion.div>
+          {isLoaded && (
+            <>
+              <motion.div 
+                style={{ y: yLeft, rotate: rotateLeft }}
+                className="absolute -left-4 md:-left-20 top-20 w-32 md:w-64 aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl hidden lg:block opacity-70"
+              >
+                <video 
+                  ref={videoLeftRef}
+                  src="/cotrim.mp4" 
+                  className="w-full h-full object-cover" 
+                  muted 
+                  loop 
+                  playsInline
+                  preload="auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              </motion.div>
 
-          <motion.div 
-            style={{ y: yRight, rotate: rotateRight }}
-            className="absolute -right-4 md:-right-20 top-40 w-32 md:w-64 aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl hidden lg:block opacity-70"
-          >
-            <video 
-              ref={videoRightRef}
-              src="/videolanding2.mov" 
-              className="w-full h-full object-cover" 
-              muted 
-              loop 
-              playsInline
-              preload="none"
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-          </motion.div>
+              <motion.div 
+                style={{ y: yRight, rotate: rotateRight }}
+                className="absolute -right-4 md:-right-20 top-40 w-32 md:w-64 aspect-[9/16] rounded-2xl md:rounded-[2rem] overflow-hidden border border-white/10 shadow-2xl hidden lg:block opacity-70"
+              >
+                <video 
+                  ref={videoRightRef}
+                  src="/videolanding2.mov" 
+                  className="w-full h-full object-cover" 
+                  muted 
+                  loop 
+                  playsInline
+                  preload="auto"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+              </motion.div>
+            </>
+          )}
 
           <motion.div
             initial={{ opacity: 0, y: 20 }}

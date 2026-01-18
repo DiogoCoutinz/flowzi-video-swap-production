@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { Play, Volume2, VolumeX, Sparkles } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const examples = [
   { 
@@ -43,7 +43,16 @@ const examples = [
 const VideoCard = ({ example, index }: { example: typeof examples[0]; index: number }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
+  const [shouldLoad, setShouldLoad] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    // Delay loading videos in this section even further
+    const timer = setTimeout(() => {
+      setShouldLoad(true);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handlePlayPause = () => {
     if (!videoRef.current) return;
@@ -80,17 +89,23 @@ const VideoCard = ({ example, index }: { example: typeof examples[0]; index: num
         onClick={handlePlayPause}
       >
         <div className="relative aspect-[9/16] bg-black overflow-hidden">
-          <video
-            ref={videoRef}
-            src={example.videoUrl}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-            loop
-            playsInline
-            muted={isMuted}
-            onPlay={() => setIsPlaying(true)}
-            onPause={() => setIsPlaying(false)}
-            preload="metadata"
-          />
+          {shouldLoad ? (
+            <video
+              ref={videoRef}
+              src={example.videoUrl}
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+              loop
+              playsInline
+              muted={isMuted}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              preload="none"
+            />
+          ) : (
+            <div className="w-full h-full bg-secondary/20 animate-pulse flex items-center justify-center">
+              <Sparkles className="w-8 h-8 text-primary/20" />
+            </div>
+          )}
 
           {/* Overlay Gradient */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
