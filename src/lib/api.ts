@@ -158,6 +158,23 @@ export async function uploadFile(file: File): Promise<string> {
 }
 
 /**
+ * Convert video to MP4 using Cloudinary API
+ */
+export async function convertVideo(videoUrl: string): Promise<string> {
+  const response = await fetch('/api/convert', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ videoUrl }),
+  });
+
+  const result = await response.json();
+  if (!response.ok) throw new Error(result.error || 'Erro na conversão do vídeo');
+  return result.url;
+}
+
+/**
  * Poll for video status with exponential backoff
  */
 export function pollVideoStatus(

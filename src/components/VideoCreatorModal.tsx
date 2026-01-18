@@ -2,7 +2,7 @@ import { useState, useCallback, useEffect, lazy, Suspense } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Upload, Check, ChevronRight, ChevronLeft, Lock, Shield, CreditCard, AlertCircle, Video, Image as ImageIcon, Loader2, Mail, Clock, RefreshCw, Sparkles } from "lucide-react";
 import { validateImage, validateVideo } from "@/lib/validations";
-import { createCheckoutSession, verifyCheckout, generateVideo, uploadFile } from "@/lib/api";
+import { createCheckoutSession, verifyCheckout, uploadFile, convertVideo } from "@/lib/api";
 
 // Lazy load Stripe React components
 const StripeCheckout = lazy(() => import("./StripeCheckout"));
@@ -234,9 +234,22 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
         return;
       }
       
-      const { photoUrl, videoUrl, email: savedEmail, userName } = finalJobData;
+      let { photoUrl, videoUrl, email: savedEmail, userName } = finalJobData;
       
       console.log("[Flowzi] Parsed pending job:", { photoUrl: photoUrl?.substring(0, 50), videoUrl: videoUrl?.substring(0, 50), savedEmail, userName });
+
+      // 2.5 Auto-convert MOV to MP4 via Cloudinary if needed
+      if (videoUrl.toLowerCase().includes('.mov')) {
+        console.log("[Flowzi] MOV detected, converting via Cloudinary...");
+        try {
+          const convertedUrl = await convertVideo(videoUrl);
+          console.log("[Flowzi] Conversion complete:", convertedUrl);
+          videoUrl = convertedUrl;
+        } catch (convError) {
+          console.error("[Flowzi] Conversion failed, trying with original URL:", convError);
+          // Continue with original URL as fallback, maybe Kie.ai accepts it now
+        }
+      }
 
       // 3. Send data to n8n Webhook (Production URL)
       console.log("[Flowzi] Sending to n8n webhook...");
@@ -551,7 +564,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                         <label className="cursor-pointer block">
                           <input
                             type="file"
-                            accept="video/mp4"
+                            accept="video/mp4,video/quicktime"
                             onChange={handleVideoUpload}
                             className="hidden"
                           />
@@ -561,7 +574,7 @@ const VideoCreatorModal = ({ isOpen, onClose }: VideoCreatorModalProps) => {
                             </div>
                             <div>
                               <p className="font-medium text-sm">Arrasta ou clica para escolher</p>
-                              <p className="text-xs text-muted-foreground mt-1">MP4 • Máx 100MB</p>
+                              <p className="text-xs text-muted-foreground mt-1">MP4 ou MOV • Máx 100MB</p>
                             </div>
                           </div>
                         </label>
