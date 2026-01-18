@@ -80,6 +80,20 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
   });
 };
 
+// Helper to get video dimensions
+export const getVideoDimensions = (file: File): Promise<{ width: number; height: number }> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video');
+    video.preload = 'metadata';
+    video.onloadedmetadata = () => {
+      window.URL.revokeObjectURL(video.src);
+      resolve({ width: video.videoWidth, height: video.videoHeight });
+    };
+    video.onerror = () => reject(new Error("Não foi possível ler as dimensões do vídeo"));
+    video.src = URL.createObjectURL(file);
+  });
+};
+
 // Helper to get video duration
 export const getVideoDuration = (file: File): Promise<number> => {
   return new Promise((resolve, reject) => {
@@ -122,10 +136,24 @@ export const validateVideo = async (
     return { valid: false, error: basicValidation.error.errors[0]?.message };
   }
 
-  // Check duration
+  // Check duration and dimensions
   try {
-    const duration = await getVideoDuration(file);
-    return validateVideoDuration(duration, maxDuration);
+    const [duration, dimensions] = await Promise.all([
+      getVideoDuration(file),
+      getVideoDimensions(file)
+    ]);
+
+    const durationValidation = validateVideoDuration(duration, maxDuration);
+    if (!durationValidation.valid) return durationValidation;
+
+    if (dimensions.width < 720 || dimensions.height < 720) {
+      return { 
+        valid: false, 
+        error: "A resolução do vídeo deve ser de pelo menos 720x720" 
+      };
+    }
+
+    return { valid: true };
   } catch {
     return { valid: false, error: "Não foi possível ler o vídeo" };
   }
