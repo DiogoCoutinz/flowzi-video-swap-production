@@ -9,19 +9,19 @@ import {
 const faqs = [
   {
     question: "Quanto tempo demora?",
-    answer: "8-14 minutos. Recebes um email quando estiver pronto.",
+    answer: "Entre 8 a 12 minutos. O nosso sistema processa o vídeo e envia-te automaticamente um email com o link para download.",
   },
   {
     question: "Que formatos funcionam?",
-    answer: "Foto: JPG, PNG, WEBP (máx 10MB). Vídeoß MP4, MOV, MKV (máx 100MB, 12 seg).",
+    answer: "Para a fotografia aceitamos JPG, PNG ou WEBP. Para o vídeo o formato deve ser MP4 (máximo de 12 segundos).",
   },
   {
     question: "Os meus dados estão seguros?",
-    answer: "Sim. Apagamos tudo após 24 horas automaticamente.",
+    answer: "Totalmente. Não guardamos as tuas fotos originais. Apenas o resultado final é mantido nos nossos servidores por 15 dias para que possas fazer o download, sendo depois apagado permanentemente.",
   },
   {
     question: "E se não ficar satisfeito?",
-    answer: "Contacta-nos em até 24h e reembolsamos sem questões.",
+    answer: "Garantimos 100% de satisfação. Se o resultado não for o que esperavas, envia um email para flowzi.geral@gmail.com com o vídeo e a tua justificação, e devolvemos 100% do teu dinheiro.",
   },
 ];
 
